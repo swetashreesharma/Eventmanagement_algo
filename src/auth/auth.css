@@ -1,0 +1,64 @@
+#root {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 2rem;
+
+}
+
+.password{
+display: grid;
+margin: 5px ;
+grid-template-columns: 85% 15%;
+}
+.card {
+  padding: 2em;
+  color: white;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 8px 0 rgba(106, 101, 101, 0.19), 0 6px 20px 0 rgba(106, 101, 101, 0.19);
+
+}
+
+body{
+    background: url('././assests/bg3.jpg') center/cover no-repeat;
+
+}
+
+
+button:hover {
+  background-color:#1e2e2e;
+  color:aliceblue;
+  
+}
+
+
+
+
+input,button,select {
+height: 35px;    
+padding: 4px 12px; 
+border-radius: 8px;
+border: 1px solid #ccc;
+font-size: 16px;
+
+}
+
+
+
+#head{
+  background-color: #1e2e2e;
+  color: white;
+  margin: 10px ;
+  height: 35px;    
+  padding: 4px 12px; 
+  text-align: center;
+  border-radius: 8px;
+}
+
+a{
+  text-align: center;
+}
+p{
+  color: red;
+}
