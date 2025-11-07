@@ -534,7 +534,6 @@ textarea {
 
 
 .kanban-container {
-  width: 1000px;
   display: flex;
   align-items: flex-start;
   gap: 20px;
@@ -546,19 +545,26 @@ textarea {
   background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(8px);
   border-radius: 10px;
-  min-width: 200px;
   padding: 10px;
   box-shadow: 0 4px 8px rgba(106, 101, 101, 0.19);
+
 }
 
-.kanban-column h3 {
+.kanban-column table {
   background-color: #1e2e2e;
   color: white;
   text-align: center;
   border-radius: 6px;
   padding: 5px;
+  padding-left: 10px;
 }
+.kanban-column table th{
+    padding-left: 20px; 
 
+}
+.small-btn{
+margin: 5px;
+}
 .add-item-btn {
   background-color: #1e2e2e;
   color: white;

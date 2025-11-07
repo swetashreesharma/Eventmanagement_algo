@@ -14,6 +14,7 @@ const BASE_URL = "http://192.168.1.17:5000/api";
 // --- Axios Instances ---
 const apiClient = axios.create({ baseURL: `${BASE_URL}/clients` });
 const apiProject = axios.create({ baseURL: `${BASE_URL}/projects` });
+const apiState = axios.create ({baseURL: `${BASE_URL}/states`});
 
 // --- Request Interceptor for Token ---
 const attachToken = (config) => {
@@ -24,6 +25,7 @@ const attachToken = (config) => {
 
 apiClient.interceptors.request.use(attachToken);
 apiProject.interceptors.request.use(attachToken);
+apiState.interceptors.request.use(attachToken);
 
 // --- Client APIs ---
 export const clientAPI = {
@@ -41,6 +43,14 @@ export const projectAPI = {
   updateProject:(data)=>apiProject.post("/updateproject",data),
   deleteProject:(data)=>apiProject.post("/deleteproject",data),
 };
+
+export const stateAPI={
+  addState:(data)=>apiState.post("/addstate",data),
+  getAllStates:(data)=>apiState.post("/getallstates",data),
+  getStateById:(data)=>apiState.post("getstatebyid",data),
+  updateState:(data)=>apiState.post("/updatestate",data),
+  deleteState:(data)=>apiState.post("/deletestate",data),
+}
 /*
 //clients api
 const API = axios.create({

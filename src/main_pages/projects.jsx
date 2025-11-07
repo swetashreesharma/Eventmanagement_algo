@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import MainPage from "./mainpage";
 import axios from "axios";
 import { clientAPI, projectAPI } from "../services/backendservices";
+import { useNavigate } from "react-router-dom";
 
 function Project() {
   const [showForm, setShowForm] = useState(false);
@@ -12,9 +13,10 @@ function Project() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formMode, setFormMode] = useState("add");
-   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const navigate=useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -46,14 +48,26 @@ function Project() {
     try {
       setLoading(true);
       const res = await projectAPI.getAllProjects();
+
       if (res?.data?.status) {
-        setProjects(res.data.data || []);
+        const data = res.data.data || [];
+
+        if (data.length === 0) {
+          console.log("No projects found.");
+        }
+        setProjects(data);
       } else {
-        console.log("getAllProjects response:", res.data);
+        console.log("getAllProjects returned unexpected response:", res.data);
+        setProjects([]); // ensure empty list instead of undefined
       }
     } catch (err) {
-      console.log("error fetchiong projects :", err);
-      alert("failed to fetch projects");
+      console.warn(
+        "Error fetching projects:",
+        err?.response?.data || err.message
+      );
+      // Only alert if it's a real failure, not "no data"
+      if (err?.response?.status !== 404) {
+      }
     } finally {
       setLoading(false);
     }
@@ -142,60 +156,69 @@ function Project() {
       client: project.client_id,
     });
   }
-async function handleDelete(project_id) {
-  const confirmDelete = window.confirm(
-    `Are you sure you want to delete this project (${project_id})?`
-  );
-  if (!confirmDelete) return; // Only return if user CANCELS
+  async function handleDelete(project_id) {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this project (${project_id})?`
+    );
+    if (!confirmDelete) return;
 
-  try {
-    const res = await projectAPI.deleteProject({ project_id });
-    if (res?.data?.status) {
-      alert("Project deleted successfully!");
-      fetchProjects(); // Refresh the list
-    } else {
-      alert(res?.data?.error || "Failed to delete project");
+    try {
+      const res = await projectAPI.deleteProject({ project_id });
+      if (res?.data?.status) {
+        alert("Project deleted successfully!");
+        // Remove deleted project immediately from UI
+        setProjects((prev) => prev.filter((p) => p.project_id !== project_id));
+      } else {
+        alert(res?.data?.error || "Failed to delete project");
+      }
+    } catch (err) {
+      console.error("Delete project error:", err);
+      alert("Error deleting project");
     }
-  } catch (err) {
-    console.error("Delete project error:", err);
-    alert("Error deleting project");
   }
-}
 
-
-    //  Filter Projects
+  // 🔍 Filter Projects
   const filteredProjects = projects.filter((p) => {
     const term = searchTerm.toLowerCase();
+    const clientName = clientMap[p.client_id]?.toLowerCase() || "";
     return (
       p.p_name?.toLowerCase().includes(term) ||
       p.description?.toLowerCase().includes(term) ||
-      p.client_id?.toLowerCase().includes(term) ||
-      p.cost?.toLowerCase().includes(term)
+      clientName.includes(term) ||
+      String(p.cost).toLowerCase().includes(term)
     );
   });
 
-  const storedProjects = [...filteredProjects].sort((a, b) => {
+  // 🔃 Sort Projects
+  const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (!sortOption) return 0;
 
     let aValue = a[sortOption];
     let bValue = b[sortOption];
 
-    // Special handling for Date of Birth
-    if (sortOption === "dob") {
-      aValue = new Date(aValue);
-      bValue = new Date(bValue);
+    // Convert cost to number if sorting by cost
+    if (sortOption === "cost") {
+      aValue = Number(aValue);
+      bValue = Number(bValue);
+    }
+
+    // Convert client_id to client name for sorting by client
+    if (sortOption === "clientMap") {
+      aValue = clientMap[aValue]?.toLowerCase() || "";
+      bValue = clientMap[bValue]?.toLowerCase() || "";
     }
 
     if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
     if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
+
   return (
     <>
       <MainPage />
       <br />
-          <label className="heading">Project List</label>
-          <br />
+      <label className="heading">Project List</label>
+      <br />
 
       {/* Add Project Button */}
       <button className="clientbutton" onClick={() => setShowForm(true)}>
@@ -271,9 +294,8 @@ async function handleDelete(project_id) {
         </div>
       )}
 
-
-        <div className="search-sort-bar">
-             {/*} <label className="search-sort-heading">Search Client</label>*/}
+      <div className="search-sort-bar">
+        {/*} <label className="search-sort-heading">Search Client</label>*/}
 
         <input
           type="text"
@@ -282,7 +304,7 @@ async function handleDelete(project_id) {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
-             {/*} <label className="search-sort-heading">Search Client</label>*/}
+        {/*} <label className="search-sort-heading">Search Client</label>*/}
         <select
           className="sort-dropdown"
           value={sortOption}
@@ -305,11 +327,11 @@ async function handleDelete(project_id) {
         </select>
       </div>
 
-
       {/* Project Table */}
-      {projects.length > 0 && (
+      {loading ? (
+        <p>Loading projects...</p>
+      ) :  sortedProjects.length > 0  ? (
         <div className="client-table">
-          
           <br />
           <table border="1" cellPadding="8">
             <thead>
@@ -323,8 +345,7 @@ async function handleDelete(project_id) {
               </tr>
             </thead>
             <tbody>
-              (fetchProjects() && (<></>))
-              {projects.map((proj, index) => (
+              {sortedProjects.map((proj, index) => (
                 <tr key={index}>
                   <td>{proj.p_name}</td>
                   <td>{proj.description}</td>
@@ -336,12 +357,25 @@ async function handleDelete(project_id) {
                     <button onClick={() => handleDelete(proj.project_id)}>
                       Delete
                     </button>
-                  </td>
+<button onClick={() => navigate("/state", { state: { project_id: proj.project_id } })}>
+  View
+</button>                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      ) : (
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "20px",
+            color: "white",
+            fontWeight: "bolder",
+          }}
+        >
+          No projects Avaliable.
+        </p>
       )}
     </>
   );

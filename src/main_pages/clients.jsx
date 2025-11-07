@@ -150,27 +150,23 @@ const res = await addClient(payload, {
     }
   }
 
-  async function handleDelete(clientId) {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete this client? ${clientId} `
-      )
-    )
-      return;
+async function handleDelete(clientId) {
+  if (!window.confirm(`Are you sure you want to delete this client?`)) return;
 
-    try {
-      const res = await clientAPI.deleteClient({ client_id: clientId });
-      if (res?.data?.status) {
-        alert("Client deleted successfully");
-        fetchClients();
-      } else {
-        alert(res?.data?.error || "Failed to delete client");
-      }
-    } catch (err) {
-      console.error("Delete client error:", err);
-      alert("Error deleting client. See console.");
+  try {
+    const res = await clientAPI.deleteClient({ client_id: clientId });
+    if (res?.data?.status) {
+      alert("Client deleted successfully");
+      setClients((prev) => prev.filter((c) => c.client_id !== clientId));
+    } else {
+      alert(res?.data?.error || "Failed to delete client");
     }
+  } catch (err) {
+    console.error("Delete client error:", err);
+    alert("Error deleting client. See console.");
   }
+}
+
   function handleUpdate(client) {
     setShowForm(true);
     setFormMode("update");
