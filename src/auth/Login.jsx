@@ -101,12 +101,13 @@ function Login() {
 
 export default Login;
 */
-import "./Login.css";
+
+import "../style/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "./App.jsx";
-import API from "./api/api.jsx";
+import "../App.jsx";
+import { userAPI } from "../services/backendservices.js";
 function Login() {
   const [inputs, setInputs] = useState({});
   const [errors, setErrors] = useState({});
@@ -142,10 +143,11 @@ function Login() {
     setErrors(validateErrors);
     if (Object.keys(validateErrors).length === 0) {
       try {
-        const res = await API.post("/login", {
+        const res = await userAPI.login({
           email: inputs.email,
           password: inputs.password,
         });
+
         console.log("login successful", res.data);
         setMessage("login successful!");
         if (res.data.status) {

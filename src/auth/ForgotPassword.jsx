@@ -1,9 +1,11 @@
-import "./Login.css";
+//import "../Login.css";
+import "../style/Login.css";
+
 import { useState } from "react";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import API from "./api/api.jsx";
-
+import { userAPI } from "../services/backendservices";
+import Modal from "../components/modal.jsx"
 function ForgotPassword() {
   const [inputs, setInputs] = useState({});
 
@@ -14,6 +16,8 @@ function ForgotPassword() {
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  const[modal,setModal]=useState({show:false,title:"",message:"",type:""})
+
   const [showPassword, setShowPassword] = useState(false);
   const [showPassword1, setShowPassword1] = useState(false);
   const passwordVisiblitiy = () => {
@@ -22,6 +26,12 @@ function ForgotPassword() {
   const passwordVisiblitiy1 = () => {
     setShowPassword1(!showPassword1);
   };
+
+  const toggleModal=(title,message,type="info")=>{
+      setModal({show:true,title,message,type});
+
+  };
+  
 
   function handleChange(e) {
     const name = e.target.name;
@@ -58,20 +68,20 @@ function ForgotPassword() {
     setErrors(validateErrors);
     if (Object.keys(validateErrors).length === 0) {
       try {
-        const res = await API.post("/takeEmail", {
+        const res = await userAPI.takeEmail({
           email: inputs.email,
         });
         console.log("Got Email", res.data);
+        toggleModal("Success","Email Verified","success");
         setMessage("Email Verified");
-        alert("Enter Password");
         if (res.data.token) {
           localStorage.setItem("token", res.data.token);
         }
         setIsEmailSent(true);
       } catch (err) {
         console.error("email error", err);
-        alert("Invalid Email");
-        setMessage(err.response?.data?.error || "Invslid Email.");
+        toggleModal("Error","Invalid email","error")
+        setMessage(err.response?.data?.error || "Invalid Email.");
       }
     } else {
       alert("Network error");
@@ -84,21 +94,20 @@ function ForgotPassword() {
     setErrors(validateErrors);
     if (Object.keys(validateErrors).length === 0 && inputs.otp == 123456) {
       try {
-        const res = API.post("/verifyOtpAndResetPassword", {
+        const res = userAPI.verifyOtpAndResetPassword({
           email: inputs.email,
           otp: inputs.otp,
           newPassword: inputs.password,
         });
-        alert("Password Updated Successful");
-        alert("Password upadted");
+        toggleModal("Success","Password Updated","success");
         setIsOtpShown(true);
         setTimeout(() => navigate("/"), 1500);
       } catch (err) {
-        alert("Invalid OTP or Email!");
+        toggleModal("Error","Invalid OTP or Email!","error" )
         console.log(err);
       }
     } else {
-      alert("Password didn't match");
+      toggleModal("Error","Password didn't match","error");
       setIsOtpShown(false);
     }
   }
@@ -205,6 +214,13 @@ function ForgotPassword() {
       ) : (<></>)*/}
       </div>
       </div>
+        <Modal
+        show={modal.show}
+        onClose={() => setModal({ ...modal, show: false })}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+      />
     </>
   );
 }

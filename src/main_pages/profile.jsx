@@ -1,37 +1,37 @@
 import { useEffect, useState } from "react";
-import API from "../api/api.jsx";
-import "../Login.css";
-import "../assests/cities.json";
-import PrimaryCities from '../assests/cities.json';
-import { UploadAPI } from "../api/api.jsx"; 
+import "../style/Login.css";
+import PrimaryCities from "../assests/cities.json";
 import MainPage from "./mainpage.jsx";
+import { userAPI } from "../services/backendservices.js";
 
 function Profile() {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
+  const [errors, setErrors] = useState({}); 
+
+  const baseURL = "http://192.168.1.17:5000";
+  const imageURL = profile?.profile_pic
+    ? baseURL + profile.profile_pic.replace(/\\/g, "/").replace(/^\/+/, "/")
+    : "/default-avatar.png";
+
   const cities = PrimaryCities.reduce((acc, item) => {
-  if (!acc[item.state]) {
-    acc[item.state] = [];
-  }
-  acc[item.state].push(item.name);
-  return acc;
-}, {});
-  const baseURL = "http://192.168.1.17:5001/api/users"; 
+    if (!acc[item.state]) acc[item.state] = [];
+    acc[item.state].push(item.name);
+    return acc;
+  }, {});
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
 
     if (storedUser && token) {
-      const user = JSON.parse(storedUser);
-
-      API.get(`/getprofile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      userAPI
+        .getProfile()
         .then((res) => {
           setProfile(res.data.result);
-          setFormData(res.data.result); // prefill data
+          setFormData(res.data.result);
         })
         .catch((err) => {
           console.error("Profile fetch error:", err);
@@ -39,197 +39,240 @@ function Profile() {
     }
   }, []);
 
-  const handleEditClick = () => {
-    setEditMode(true);
-  };
+  const handleEditClick = () => setEditMode(true);
 
   const handleCancel = () => {
     setEditMode(false);
     setFormData(profile);
+    setErrors({});
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+  if (name === "dob") {
+    const selectedDate = new Date(value);
+    const today = new Date();
+
+    // Prevent future DOB
+    if (selectedDate > today) {
+      alert("Date of Birth cannot be greater than today!");
+      return;
+    }
+  }
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" })); // clear field error
   };
 
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
+  const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
+
+  const validateForm = () => {
+    const newErrors = {};
+        const cureentDate = new Date();
+
+
+    if (!formData.name?.trim()) newErrors.name = "Name is required";
+    if (!formData.state_name) newErrors.state_name = "Please select a state";
+    if (!formData.city_name) newErrors.city_name = "Please select a city";
+
+    if (!formData.mobile_num) {
+      newErrors.mobile_num = "Mobile number is required";
+    } else if (!/^[6-9]\d{9}$/.test(formData.mobile_num)) {
+      newErrors.mobile_num = "Enter a valid 10-digit mobile number";
+    }
+
+    if (!formData.dob) {newErrors.dob = "Please select your date of birth";}
+    else if (formData.dob > cureentDate) {
+      newErrors.dob = "Enter proper Birthdate";}
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; 
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+
+    if (!validateForm()) return; 
 
     try {
-      // Update text fields
-      await API.post(`/updateProfile`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { email, profile_pic, ...dataToSend } = formData;
 
-      // Upload profile picture (if selected)
+      await userAPI.updateProfile(dataToSend);
+
       if (selectedFile) {
         const formDataPic = new FormData();
         formDataPic.append("profile_pic", selectedFile);
-await UploadAPI.post(`/uploadProfilePic`, formDataPic, {
-  headers: {
-    "Content-Type": "multipart/form-data",
-  },
-});
-
+        await userAPI.uploadProfilePic(formDataPic);
       }
 
-      // Refetch updated profile
-      const updatedProfile = await API.get(`/getprofile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const updatedProfile = await userAPI.getProfile();
       setProfile(updatedProfile.data.result);
       setEditMode(false);
       alert("Profile updated successfully!");
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Error updating profile");
+      alert(err.response?.data?.msg || "Error updating profile");
     }
   };
 
- 
-
   return (
     <>
-    <MainPage/>
-    <div className="profile-container">
-      <h5 className="profile-heading">Profile Page</h5>
+      <MainPage />
+      <div className="profile-container">
+        <h5 className="profile-heading">Profile Page</h5>
 
-      {profile ? (
-        <div className="profile-card">
-          <div className="profile-image-container">
-           <img
-  src={""}
-  alt="Profile"
-  className="profile-image"
-/>
+        {profile ? (
+          <div className="profile-card">
+            <div className="profile-image-container">
+              <img src={imageURL} alt="Profile" className="profile-image" />
+              {editMode && (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="file-input"
+                />
+              )}
+            </div>
 
+            <div className="profile-details">
+              {editMode ? (
+                <form onSubmit={handleSave} className="edit-form">
+                  <label>
+                    Name:
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name || ""}
+                      onChange={handleChange}
+                    />
+                    {errors.name && <p className="error-text">{errors.name}</p>}
+                  </label>
 
-            {editMode && (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="file-input"
-              />
-            )}
-          </div>
+                  <label>
+                    Email:
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email || ""}
+                      disabled
+                    />
+                  </label>
 
-          <div className="profile-details">
-            {editMode ? (
-              <form onSubmit={handleSave} className="edit-form">
-                <label>
-                  Name:
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name || ""}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label>
-                  Email:
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email || ""}
-                    onChange={handleChange}
-                  />
-                </label>
-
-            
-
-                <label>
-                  State:
-               
-                  <select 
-                    name="state_name" 
-                    value={formData.state_name || ""} 
-                    onChange={handleChange} >
+                  <label>
+                    State:
+                    <select
+                      name="state_name"
+                      value={formData.state_name || ""}
+                      onChange={handleChange}
+                    >
                       <option value="">Select State</option>
-                       {Object.keys(cities).map((state,id)=>(
-                     <option key={id} value={state}>{state}</option>))}
-                 </select>
-                </label>
+                      {Object.keys(cities).map((state, id) => (
+                        <option key={id} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.state_name && (
+                      <p className="error-text">{errors.state_name}</p>
+                    )}
+                  </label>
 
-                            <label>
-                City:
-                <select
-                  name="city_name"
-                  value={formData.city_name || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select City</option>
-                  {formData.state_name &&
-                    cities[formData.state_name]?.map((city, id) => (
-                      <option key={id} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                </select>
-              </label>
+                  <label>
+                    City:
+                    <select
+                      name="city_name"
+                      value={formData.city_name || ""}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select City</option>
+                      {formData.state_name &&
+                        cities[formData.state_name]?.map((city, id) => (
+                          <option key={id} value={city}>
+                            {city}
+                          </option>
+                        ))}
+                    </select>
+                    {errors.city_name && (
+                      <p className="error-text">{errors.city_name}</p>
+                    )}
+                  </label>
 
+                  <label>
+                    Mobile Number:
+                    <input
+                      type="number"
+                      name="mobile_num"
+                      value={formData.mobile_num || ""}
+                      onChange={handleChange}
+                    />
+                    {errors.mobile_num && (
+                      <p className="error-text">{errors.mobile_num}</p>
+                    )}
+                  </label>
 
-                <label>
-                  Mobile Number:
-                  <input
-                    type="number"
-                    name="mobile_num"
-                    value={formData.mobile_num || ""}
-                    onChange={handleChange}
-                  />
-                </label>
+                  <label>
+                    DOB:
+                    <input
+                      type="date"
+                      name="dob"
+                      value={
+                        formData.dob
+                          ? new Date(formData.dob).toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={handleChange}
+                    />
+                    {errors.dob && <p className="error-text">{errors.dob}</p>}
+                  </label>
 
-                <label>
-                  DOB:
-                  <input
-                    type="date"
-                    name="dob"
-                    value={
-                      formData.dob
-                        ? new Date(formData.dob).toISOString().split("T")[0]
-                        : ""
-                    }
-                    onChange={handleChange}
-                  />
-                </label>
+                  <div className="edit-buttons">
+                    <button type="submit" className="save-btn">
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="cancel-btn"
+                      onClick={handleCancel}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <p>
+                    <strong>Name:</strong> {profile.name}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {profile.email}
+                  </p>
+                  <p>
+                    <strong>State:</strong> {profile.state_name}
+                  </p>
+                  <p>
+                    <strong>City:</strong> {profile.city_name}
+                  </p>
+                  <p>
+                    <strong>DOB:</strong>{" "}
+                    {new Date(profile.dob).toLocaleDateString()}
+                  </p>
+                  <p>
+                    <strong>Mobile:</strong> {profile.mobile_num}
+                  </p>
 
-                <div className="edit-buttons">
-                  <button type="submit" className="save-btn">
-                    Save
+                  <button onClick={handleEditClick} className="edit-btn">
+                    Edit Profile
                   </button>
-                  <button type="button" className="cancel-btn" onClick={handleCancel}>
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <p><strong>Name:</strong> {profile.name}</p>
-                <p><strong>Email:</strong> {profile.email}</p>
-                <p><strong>State:</strong> {profile.state_name}</p>
-                <p><strong>City:</strong> {profile.city_name}</p>
-                <p><strong>DOB:</strong> {new Date(profile.dob).toLocaleDateString()}</p>
-                <p><strong>Mobile:</strong> {profile.mobile_num}</p>
-
-                <button onClick={handleEditClick} className="edit-btn">
-                  Edit Profile
-                </button>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      ) : (
-        <p className="loading-text">Loading profile...</p>
-      )}
-    </div></>
+        ) : (
+          <p className="loading-text">Loading profile...</p>
+        )}
+      </div>
+    </>
   );
 }
 

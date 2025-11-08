@@ -1,8 +1,9 @@
-import "../Login.css";
+import "../style/Login.css";
+
 import { useState, useEffect } from "react";
 import MainPage from "./mainpage";
 import axios from "axios";
-import { clientAPI, projectAPI } from "../services/backendservices";
+import { clientAPI, projectAPI,taskAPI } from "../services/backendservices";
 import { useNavigate } from "react-router-dom";
 
 function Project() {
@@ -16,7 +17,7 @@ function Project() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -48,6 +49,7 @@ function Project() {
     try {
       setLoading(true);
       const res = await projectAPI.getAllProjects();
+      
 
       if (res?.data?.status) {
         const data = res.data.data || [];
@@ -109,7 +111,7 @@ function Project() {
 
     if (Object.keys(validationErrors).length) return;
     const payload = {
-      project_id: inputs.project_id, // <-- important
+      project_id: inputs.project_id, 
 
       p_name: inputs.name,
       description: inputs.note,
@@ -177,7 +179,7 @@ function Project() {
     }
   }
 
-  // 🔍 Filter Projects
+  //  Filter Projects
   const filteredProjects = projects.filter((p) => {
     const term = searchTerm.toLowerCase();
     const clientName = clientMap[p.client_id]?.toLowerCase() || "";
@@ -189,7 +191,7 @@ function Project() {
     );
   });
 
-  // 🔃 Sort Projects
+  //  Sort Projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (!sortOption) return 0;
 
@@ -330,7 +332,7 @@ function Project() {
       {/* Project Table */}
       {loading ? (
         <p>Loading projects...</p>
-      ) :  sortedProjects.length > 0  ? (
+      ) : sortedProjects.length > 0 ? (
         <div className="client-table">
           <br />
           <table border="1" cellPadding="8">
@@ -349,17 +351,24 @@ function Project() {
                 <tr key={index}>
                   <td>{proj.p_name}</td>
                   <td>{proj.description}</td>
-                  <td>{clientMap[proj.client_id] || "Unknown Client"}</td>
+                  <td>{proj.full_name} </td>
                   <td>{proj.cost}</td>
-                  <td>{proj.lastStatus || ""}</td>
+                  <td>{proj.last_action || ""}</td>
                   <td>
                     <button onClick={() => handleUpdate(proj)}>Update</button>
                     <button onClick={() => handleDelete(proj.project_id)}>
                       Delete
                     </button>
-<button onClick={() => navigate("/state", { state: { project_id: proj.project_id } })}>
-  View
-</button>                  </td>
+                    <button
+                      onClick={() =>
+                        navigate("/state", {
+                          state: { project_id: proj.project_id },
+                        })
+                      }
+                    >
+                      View
+                    </button>{" "}
+                  </td>
                 </tr>
               ))}
             </tbody>

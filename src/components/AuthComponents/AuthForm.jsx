@@ -1,7 +1,7 @@
 // src/components/AuthForm.jsx
 import React from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "../../Login.css";
+import "../../style/Login.css";
 
 function AuthForm({
   title,

@@ -1,8 +1,9 @@
 //uppdate doesnt update email
-import "../Login.css";
+//import "../Login.css";
+import "../style/Login.css";
+
 import { useState, useEffect } from "react";
 import PrimaryCities from "../assests/cities.json";
-
 
 import { clientAPI } from "../services/backendservices.js";
 import MainPage from "./mainpage.jsx";
@@ -15,7 +16,7 @@ function Client() {
   const [loading, setLoading] = useState(false);
   const [formMode, setFormMode] = useState("add");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState(""); 
+  const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
 
   const cities = PrimaryCities.reduce((acc, item) => {
@@ -67,46 +68,7 @@ function Client() {
     if (!inputs.dob) errs.dob = "DOB required";
     return errs;
   }
-  /*
-  async function handleSubmit(e) {
-  e.preventDefault();
-  const errs = validate();
-  setErrors(errs);
-  if (Object.keys(errs).length) return;
-const payload = {
-  f_name: inputs.f_name,
-  l_name: inputs.l_name || "",
-  email: inputs.email,
-  phone: Number(inputs.phone),
-  city_name: inputs.city_name,
-  dob: new Date(inputs.dob).toISOString(), // convert to ISO
-  gender: inputs.gender || "",
-  note: inputs.note || "",
-};
 
-  try {
-const token = localStorage.getItem("token"); 
-
-const res = await addClient(payload, {
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-    if (res?.data?.status) {
-      alert(res.data.msg); 
-      setInputs({});
-      setShowForm(false);
-      fetchClients(); 
-    } else {
-      alert(res?.data?.error || "Failed to add client");
-    }
-  } catch (err) {
-    console.error("Add client error:", err);
-    alert("Error adding client. See console.");
-  }
-}
-*/
   async function handleSubmit(e) {
     e.preventDefault();
     const errs = validate();
@@ -150,22 +112,22 @@ const res = await addClient(payload, {
     }
   }
 
-async function handleDelete(clientId) {
-  if (!window.confirm(`Are you sure you want to delete this client?`)) return;
+  async function handleDelete(clientId) {
+    if (!window.confirm(`Are you sure you want to delete this client?`)) return;
 
-  try {
-    const res = await clientAPI.deleteClient({ client_id: clientId });
-    if (res?.data?.status) {
-      alert("Client deleted successfully");
-      setClients((prev) => prev.filter((c) => c.client_id !== clientId));
-    } else {
-      alert(res?.data?.error || "Failed to delete client");
+    try {
+      const res = await clientAPI.deleteClient({ client_id: clientId });
+      if (res?.data?.status) {
+        alert("Client deleted successfully");
+        setClients((prev) => prev.filter((c) => c.client_id !== clientId));
+      } else {
+        alert(res?.data?.error || "Failed to delete client");
+      }
+    } catch (err) {
+      console.error("Delete client error:", err);
+      alert("Error deleting client. See console.");
     }
-  } catch (err) {
-    console.error("Delete client error:", err);
-    alert("Error deleting client. See console.");
   }
-}
 
   function handleUpdate(client) {
     setShowForm(true);
@@ -213,11 +175,11 @@ async function handleDelete(clientId) {
 
   return (
     <>
-    <MainPage/>
-    <br />
-        <label className="heading">Client list</label>
-        <br />
-      
+      <MainPage />
+      <br />
+      <label className="heading">Client list</label>
+      <br />
+
       <button
         className="clientbutton"
         onClick={() => {
@@ -380,7 +342,7 @@ async function handleDelete(clientId) {
       {/* Table showing clients */}
 
       <div className="search-sort-bar">
-             {/*} <label className="search-sort-heading">Search Client</label>*/}
+        {/*} <label className="search-sort-heading">Search Client</label>*/}
 
         <input
           type="text"
@@ -389,7 +351,7 @@ async function handleDelete(clientId) {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
-             {/*} <label className="search-sort-heading">Search Client</label>*/}
+        {/*} <label className="search-sort-heading">Search Client</label>*/}
         <select
           className="sort-dropdown"
           value={sortOption}
@@ -413,7 +375,6 @@ async function handleDelete(clientId) {
       </div>
 
       <div className="client-table">
-       
         <br />
         {loading ? (
           <p>Loading...</p>
@@ -449,17 +410,21 @@ async function handleDelete(clientId) {
                     <td>{c.state_name}</td>
                     <td>{c.city_name}</td>
                     <td>{c.phone}</td>
-                    <td>{c.note}</td>
+                    <td title={c.note}>
+                      {c.note?.length > 30
+                        ? c.note.substring(0, 30) + "..."
+                        : c.note}
+                    </td>
                     <td>
-                     <div style={{ display: "flex", gap: "10px" }}>
-                      <button onClick={() => handleUpdate(c)}>Update</button>
-                      <button onClick={() => handleDelete(c.client_id)}>
-                        Delete
-                      </button>
-                    </div>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button onClick={() => handleUpdate(c)}>Update</button>
+                        <button onClick={() => handleDelete(c.client_id)}>
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ))  
+                ))
               )}
             </tbody>
           </table>

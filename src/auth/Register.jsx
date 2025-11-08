@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import "./Login.css";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "./assests/cities.json";
-import PrimaryCities from "./assests/cities.json";
-import API from "./api/api.jsx";
+//import "../Login.css";
+import "../style/Login.css";
 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import "../assests/cities.json";
+import PrimaryCities from "../assests/cities.json";
+import { userAPI } from "../services/backendservices.js";
 function Register() {
   const [inputs, setInputs] = useState({});
   const [otp, setOtp] = useState("");
@@ -61,7 +62,7 @@ function Register() {
         dob: new Date(inputs.date).toISOString(),
       };
 
-      const res = await API.post("/register", payload);
+      const res = await userAPI.register(payload);
       setMessage(res.data.message || "Registration successfull. verify OTP");
       setIsOtpShown(true);
     } catch (err) {
@@ -71,7 +72,7 @@ function Register() {
 
   async function handleVerifyOtp() {
     try {
-      const res = await API.post("/verify_otp", {
+      const res = await userAPI.verifyOtp( {
         email: inputs.email,
         otp: Number(inputs.otp),
       });
@@ -108,7 +109,7 @@ function Register() {
     if (!inputs.date) {
       errors.date = "Date of birth is required";
     } else if (inputs.data > cureentDate) {
-      errors.date = "";
+      errors.date = "Enter proper Birthdate";
     }
     if (!inputs.state) {
       errors.state = "Please select a state";

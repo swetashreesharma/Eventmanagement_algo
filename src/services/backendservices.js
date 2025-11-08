@@ -2,7 +2,7 @@
 // export const GetApiRequest = ()=>(path){
 //     const token = localStorage.getItem("toke")
 //     try{
-//        co 
+//        co
 //     }
 // }
 
@@ -14,7 +14,9 @@ const BASE_URL = "http://192.168.1.17:5000/api";
 // --- Axios Instances ---
 const apiClient = axios.create({ baseURL: `${BASE_URL}/clients` });
 const apiProject = axios.create({ baseURL: `${BASE_URL}/projects` });
-const apiState = axios.create ({baseURL: `${BASE_URL}/states`});
+const apiState = axios.create({ baseURL: `${BASE_URL}/states` });
+const apiTask = axios.create({ baseURL: `${BASE_URL}/tasks` });
+const apiUser = axios.create({ baseURL: `${BASE_URL}/users` });
 
 // --- Request Interceptor for Token ---
 const attachToken = (config) => {
@@ -26,6 +28,35 @@ const attachToken = (config) => {
 apiClient.interceptors.request.use(attachToken);
 apiProject.interceptors.request.use(attachToken);
 apiState.interceptors.request.use(attachToken);
+apiTask.interceptors.request.use(attachToken);
+apiUser.interceptors.request.use(attachToken);
+
+//---User APIs----
+export const userAPI = {
+  register: (data) => apiUser.post("/register", data),
+  verifyOtp: (data) => apiUser.post("/verify_otp", data),
+
+  login: (data) => apiUser.post("/login", data),
+
+  getProfile: () => apiUser.get("/getprofile"),
+  updateProfile: (data) => apiUser.post("/updateProfile", data),
+  uploadProfilePic: (formData) =>
+    apiUser.post("/uploadProfilePic", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+
+  takeEmail: (data) => apiUser.post("/takeEmail", data),
+  verifyOtpAndResetPassword: (data) =>
+    apiUser.post("/verifyOtpAndResetPassword", data),
+};
+
+// --- Upload APIs (for profile picture or files) ---
+export const uploadAPI = {
+  uploadProfilePic: (formData) =>
+    apiUser.post("/uploadProfilePic", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+};
 
 // --- Client APIs ---
 export const clientAPI = {
@@ -40,18 +71,31 @@ export const clientAPI = {
 export const projectAPI = {
   getAllProjects: () => apiProject.get("/getallprojects"),
   addProject: (data) => apiProject.post("/addproject", data),
-  updateProject:(data)=>apiProject.post("/updateproject",data),
-  deleteProject:(data)=>apiProject.post("/deleteproject",data),
+  updateProject: (data) => apiProject.post("/updateproject", data),
+  deleteProject: (data) => apiProject.post("/deleteproject", data),
 };
 
-export const stateAPI={
-  addState:(data)=>apiState.post("/addstate",data),
-  getAllStates:(data)=>apiState.post("/getallstates",data),
-  getStateById:(data)=>apiState.post("getstatebyid",data),
-  updateState:(data)=>apiState.post("/updatestate",data),
-  deleteState:(data)=>apiState.post("/deletestate",data),
-}
-/*
+//---State APIs----
+export const stateAPI = {
+  addState: (data) => apiState.post("/addstate", data),
+  getAllStates: (data) => apiState.post("/getallstates", data),
+  getStateById: (data) => apiState.post("getstatebyid", data),
+  updateState: (data) => apiState.post("/updatestate", data),
+  deleteState: (data) => apiState.post("/deletestate", data),
+};
+
+//---Task APIs----
+
+export const taskAPI = {
+  getAllTasks: (data) => apiTask.post("/getalltasks",data),
+  getTaskById: (data) => apiTask.post("/gettaskbyid", data),
+  addTask: (data) => apiTask.post("/addtask", data),
+  updateTask: (data) => apiTask.post("/updatetask", data),
+  deleteTask: (data) => apiTask.post("/deletetask", data),
+  getTaskHistoryById: (data) => apiTask.post("/gettaskhistorybytaskid", data),
+};
+
+/*  
 //clients api
 const API = axios.create({
   baseURL: "http://192.168.1.17:5000/api/clients",
