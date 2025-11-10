@@ -561,7 +561,10 @@ textarea {
   padding-left: 3px;
 }
 .small-btn {
+  background-color: transparent;
   margin: 2px;
+  color:white;
+  border:none;
 }
 .add-item-btn {
   background-color: #1e2e2e;
