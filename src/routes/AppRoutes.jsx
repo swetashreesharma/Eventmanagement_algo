@@ -7,8 +7,7 @@ import Profile from "../main_pages/profile";
 import Client from "../main_pages/clients";
 import Project from "../main_pages/projects";
 import DashBoard from "../main_pages/dashboard";
-import State from "../main_pages/state/state";
-import AddTask from "../main_pages/addTask";
+import State from "../main_pages/state/state1";
 
 function AppRoutes() {
   return (
@@ -23,7 +22,6 @@ function AppRoutes() {
         <Route path="/projects" element={<Project />} />
         <Route path="/dashboard" element={<DashBoard />} />
         <Route path="/state" element={<State />} />
-        <Route path="/addtask/:state_id" element={<AddTask />} />
       </Routes>
     </>
   );

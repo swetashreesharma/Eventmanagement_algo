@@ -1,20 +1,37 @@
-import React from 'react';
-import "../style/Modal.css"
-function Modal({show,onClose,title,message,type="info"}){
-    if(!show) return null;
-    return(
-        <div className="modal-overlay">
-            <div className={`modal-content ${type}`}>
-                <h2>{title}</h2>
-                <p>{message}</p>
-                <div className='modal-body'>
-                    <button onClick={onClose}className='modal-btn'>
-                        Close
-                    </button>
-                </div>
+// modal.jsx
+import React from "react";
+import "../style/modal.css";
 
-            </div>
+function Modal({ show, onClose, title, message, type, onConfirm }) {
+  if (!show) return null;
+
+  const isConfirm = typeof onConfirm === "function";
+
+  return (
+    <div className="modal-overlay">
+      <div className={`modal-card ${type}`}>
+        <h3>{title}</h3>
+        <p>{message}</p>
+
+        <div className="modal-buttons">
+          {isConfirm ? (
+            <>
+              <button className="confirm-btn" onClick={() => onConfirm()}>
+                Yes
+              </button>
+              <button className="cancel-btn" onClick={onClose}>
+                No
+              </button>
+            </>
+          ) : (
+            <button className="ok-btn" onClick={onClose}>
+              OK
+            </button>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 }
+
 export default Modal;

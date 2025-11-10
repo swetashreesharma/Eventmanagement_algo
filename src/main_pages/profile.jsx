@@ -3,13 +3,15 @@ import "../style/Login.css";
 import PrimaryCities from "../assests/cities.json";
 import MainPage from "./mainpage.jsx";
 import { userAPI } from "../services/backendservices.js";
+import Modal from "../components/modal.jsx"; // import your existing modal
 
 function Profile() {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
-  const [errors, setErrors] = useState({}); 
+  const [errors, setErrors] = useState({});
+  const [modal, setModal] = useState({ show: false, title:"",message: "", type: "" });
 
   const baseURL = "http://192.168.1.17:5000";
   const imageURL = profile?.profile_pic
@@ -21,7 +23,9 @@ function Profile() {
     acc[item.state].push(item.name);
     return acc;
   }, {});
-
+const toggleModal=(title,message,type="info")=>{
+    setModal({show:true,title,message,type});
+  }
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -49,27 +53,22 @@ function Profile() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-  if (name === "dob") {
-    const selectedDate = new Date(value);
-    const today = new Date();
 
-    // Prevent future DOB
-    if (selectedDate > today) {
-      alert("Date of Birth cannot be greater than today!");
-      return;
+    if (name === "dob") {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      
     }
-  }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" })); // clear field error
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleFileChange = (e) => setSelectedFile(e.target.files[0]);
 
   const validateForm = () => {
     const newErrors = {};
-        const cureentDate = new Date();
-
+    const currentDate = new Date();
 
     if (!formData.name?.trim()) newErrors.name = "Name is required";
     if (!formData.state_name) newErrors.state_name = "Please select a state";
@@ -81,22 +80,22 @@ function Profile() {
       newErrors.mobile_num = "Enter a valid 10-digit mobile number";
     }
 
-    if (!formData.dob) {newErrors.dob = "Please select your date of birth";}
-    else if (formData.dob > cureentDate) {
-      newErrors.dob = "Enter proper Birthdate";}
+    if (!formData.dob) newErrors.dob = "Please select your date of birth";
+    else if (new Date(formData.dob) > currentDate) {
+      newErrors.dob = "Enter proper Birthdate";
+    }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; 
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return; 
+    if (!validateForm()) return;
 
     try {
       const { email, profile_pic, ...dataToSend } = formData;
-
       await userAPI.updateProfile(dataToSend);
 
       if (selectedFile) {
@@ -108,10 +107,16 @@ function Profile() {
       const updatedProfile = await userAPI.getProfile();
       setProfile(updatedProfile.data.result);
       setEditMode(false);
-      alert("Profile updated successfully!");
+
+              toggleModal("Success","Profile Updated Successfull","success");
+
     } catch (err) {
       console.error("Update failed:", err);
-      alert(err.response?.data?.msg || "Error updating profile");
+      setModal({
+        show: true,
+        message: err.response?.data?.msg || "Error updating profile",
+        onConfirm: () => setModal({ show: false, message: "" }),
+      });
     }
   };
 
@@ -241,25 +246,12 @@ function Profile() {
                 </form>
               ) : (
                 <>
-                  <p>
-                    <strong>Name:</strong> {profile.name}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {profile.email}
-                  </p>
-                  <p>
-                    <strong>State:</strong> {profile.state_name}
-                  </p>
-                  <p>
-                    <strong>City:</strong> {profile.city_name}
-                  </p>
-                  <p>
-                    <strong>DOB:</strong>{" "}
-                    {new Date(profile.dob).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <strong>Mobile:</strong> {profile.mobile_num}
-                  </p>
+                  <p><strong>Name:</strong> {profile.name}</p>
+                  <p><strong>Email:</strong> {profile.email}</p>
+                  <p><strong>State:</strong> {profile.state_name}</p>
+                  <p><strong>City:</strong> {profile.city_name}</p>
+                  <p><strong>DOB:</strong> {new Date(profile.dob).toLocaleDateString()}</p>
+                  <p><strong>Mobile:</strong> {profile.mobile_num}</p>
 
                   <button onClick={handleEditClick} className="edit-btn">
                     Edit Profile
@@ -272,6 +264,19 @@ function Profile() {
           <p className="loading-text">Loading profile...</p>
         )}
       </div>
+
+      {/* Modal section */}
+      {modal.show && (
+ <Modal
+  show={modal.show}
+  title={modal.title}
+  message={modal.message}
+  type={modal.type}
+  onClose={() => setModal({ ...modal, show: false })}
+  onConfirm={modal.onConfirm}
+/>
+
+      )}
     </>
   );
 }

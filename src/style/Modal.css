@@ -6,40 +6,115 @@
   justify-content: center;
   align-items: center;
   z-index: 999;
+  backdrop-filter: blur(3px);
 }
 
-.modal-content {
-  background-color: rgba(255, 255, 255, 0.726);
-  border-radius: 12px;
-  padding: 24px;
+/* Main modal card */
+.modal-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 28px 24px;
   width: 90%;
-  max-width: 380px;
+  max-width: 400px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  animation: fadeIn 0.25s ease-in-out;
 }
 
-.modal-content.success {
-  border-top: 6px solid #1e1e1e;
+/* Border accents */
+.modal-card.success {
+  border-top: 6px solid #5caf70;
 }
 
-.modal-content.error {
+.modal-card.error {
   border-top: 6px solid #f44336;
 }
 
-.modal-content.info {
-  border-top: 6px solid #2196f3;
+.modal-card.warning {
+  border-top: 6px solid #ff9800;
 }
 
-.modal-btn {
-  background-color: #1e1e1e;
+/* Titles and text */
+.modal-card h3 {
+  margin-bottom: 10px;
+  color: #1e1e1e;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-card p {
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 18px;
+}
+
+/* Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.modal-btn,
+.confirm-btn,
+.cancel-btn,
+.close-btn {
   border: none;
-  color: white;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 6px;
-  margin-top: 10px;
   cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
 }
 
-.modal-btn:hover {
-  background-color: #1976d2;
+/* Confirm/Close Buttons (dark base) */
+.confirm-btn,
+.modal-btn,
+.close-btn {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+.confirm-btn:hover,
+.modal-btn:hover,
+.close-btn:hover {
+  background-color: #333;
+}
+
+/* Cancel Button (light contrast) */
+.cancel-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background-color: #ccc;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.ok-btn {
+  background-color: #1e1e1e;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.ok-btn:hover {
+  background-color: #333;
 }

@@ -1,10 +1,10 @@
 import "../style/Login.css";
-
 import { useState, useEffect } from "react";
 import MainPage from "./mainpage";
 import axios from "axios";
-import { clientAPI, projectAPI,taskAPI } from "../services/backendservices";
+import { clientAPI, projectAPI } from "../services/backendservices";
 import { useNavigate } from "react-router-dom";
+import Modal from "../components/modal.jsx"; // import modal
 
 function Project() {
   const [showForm, setShowForm] = useState(false);
@@ -17,59 +17,49 @@ function Project() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [modal, setModal] = useState({ show: false, title: "", message: "", type: "", onConfirm: null }); // modal state
+
   const navigate = useNavigate();
+
+  const toggleModal = (title, message, type = "info", onConfirm = null) => {
+    setModal({ show: true, title, message, type, onConfirm });
+  };
+
+  const closeModal = () => {
+    setModal({ show: false, title: "", message: "", type: "", onConfirm: null });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.warn("No token found in localStorage");
-      return;
-    }
+    if (!token) return;
+
     axios
       .get("http://192.168.1.17:5000/api/clients/getallclients", {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => {
-        console.log("Client API Response:", res.data);
-        setClients(res.data.data || []);
-      })
-      .catch((err) => {
-        console.error("Error fetching clients:", err);
-      });
+      .then((res) => setClients(res.data.data || []))
+      .catch((err) => console.error("Error fetching clients:", err));
   }, []);
 
   useEffect(() => {
     fetchProjects().catch((err) => {
       if (err.response?.status === 401) {
-        alert("session expired . pls login again");
+        toggleModal("Session Expired", "Please log in again", "warning");
       }
     });
   }, []);
+
   async function fetchProjects() {
     try {
       setLoading(true);
       const res = await projectAPI.getAllProjects();
-      
-
       if (res?.data?.status) {
-        const data = res.data.data || [];
-
-        if (data.length === 0) {
-          console.log("No projects found.");
-        }
-        setProjects(data);
+        setProjects(res.data.data || []);
       } else {
-        console.log("getAllProjects returned unexpected response:", res.data);
-        setProjects([]); // ensure empty list instead of undefined
+        setProjects([]);
       }
     } catch (err) {
-      console.warn(
-        "Error fetching projects:",
-        err?.response?.data || err.message
-      );
-      // Only alert if it's a real failure, not "no data"
-      if (err?.response?.status !== 404) {
-      }
+      console.warn("Error fetching projects:", err?.response?.data || err.message);
     } finally {
       setLoading(false);
     }
@@ -83,70 +73,65 @@ function Project() {
 
   function validate(values) {
     const newErrors = {};
-
-    if (!values.name || values.name.trim().length < 3) {
+    if (!values.name || values.name.trim().length < 3)
       newErrors.name = "Project name must be at least 3 characters long.";
-    }
-    if (!values.note || values.note.trim().length < 5) {
+    if (!values.note || values.note.trim().length < 5)
       newErrors.note = "Description must be at least 5 characters long.";
-    }
-    if (!values.client) {
-      newErrors.client = "Please select a client.";
-    }
-    if (!values.cost) {
-      newErrors.cost = "Cost is required.";
-    } else if (isNaN(values.cost)) {
-      newErrors.cost = "Cost must be a number.";
-    } else if (Number(values.cost) <= 0) {
+    if (!values.client) newErrors.client = "Please select a client.";
+    if (!values.cost) newErrors.cost = "Cost is required.";
+    else if (isNaN(values.cost)) newErrors.cost = "Cost must be a number.";
+    else if (Number(values.cost) <= 0)
       newErrors.cost = "Cost must be greater than zero.";
-    }
-
     return newErrors;
   }
 
-  // Handle form submit
   async function handleSubmit(e) {
     e.preventDefault();
     const validationErrors = validate(inputs);
+    if (Object.keys(validationErrors).length) return setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length) return;
     const payload = {
-      project_id: inputs.project_id, 
-
+      project_id: inputs.project_id,
       p_name: inputs.name,
       description: inputs.note,
       cost: Number(inputs.cost),
       client_id: Number(inputs.client),
     };
+
     try {
       let res;
       if (formMode === "update") {
         const { client_id, ...updatePayload } = payload;
-
         res = await projectAPI.updateProject(updatePayload);
       } else {
         const { project_id, ...addPayload } = payload;
         res = await projectAPI.addProject(addPayload);
       }
-      if (res?.data?.status) {
-        const newProject = { ...inputs, lastStatus: "" };
-        setProjects((prev) => [...prev, newProject]);
 
+      if (res?.data?.status) {
         setInputs({});
         setShowForm(false);
-        setErrors({});
         fetchProjects();
+        toggleModal(
+          "Success",
+          formMode === "update"
+            ? "Project updated successfully!"
+            : "Project added successfully!",
+          "success"
+        );
       } else {
-        alert(res?.data?.error || "Operation failed");
+        toggleModal("Error", res?.data?.error || "Operation failed", "error");
       }
     } catch (err) {
       console.error("Project submit error:", err);
-      alert("Error submitting project. See console.");
+      toggleModal("Error", "Error submitting project", "error");
     }
   }
+
   const clientMap = Object.fromEntries(
     clients.map((c) => [c.client_id, `${c.f_name} ${c.l_name}`])
   );
+
   function handleUpdate(project) {
     setShowForm(true);
     setFormMode("update");
@@ -158,28 +143,32 @@ function Project() {
       client: project.client_id,
     });
   }
-  async function handleDelete(project_id) {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete this project (${project_id})?`
-    );
-    if (!confirmDelete) return;
 
-    try {
-      const res = await projectAPI.deleteProject({ project_id });
-      if (res?.data?.status) {
-        alert("Project deleted successfully!");
-        // Remove deleted project immediately from UI
-        setProjects((prev) => prev.filter((p) => p.project_id !== project_id));
-      } else {
-        alert(res?.data?.error || "Failed to delete project");
+  function handleDelete(project_id) {
+    toggleModal(
+      "Confirm Delete",
+      `Are you sure you want to delete project (${project_id})?`,
+      "warning",
+      async () => {
+        try {
+          const res = await projectAPI.deleteProject({ project_id });
+          if (res?.data?.status) {
+            setProjects((prev) =>
+              prev.filter((p) => p.project_id !== project_id)
+            );
+            toggleModal("Success", "Project deleted successfully!", "success");
+          } else {
+            toggleModal("Error", res?.data?.error || "Failed to delete", "error");
+          }
+        } catch (err) {
+          console.error("Delete project error:", err);
+          toggleModal("Error", "Error deleting project", "error");
+        }
       }
-    } catch (err) {
-      console.error("Delete project error:", err);
-      alert("Error deleting project");
-    }
+    );
   }
 
-  //  Filter Projects
+  // Filter + Sort Projects
   const filteredProjects = projects.filter((p) => {
     const term = searchTerm.toLowerCase();
     const clientName = clientMap[p.client_id]?.toLowerCase() || "";
@@ -191,21 +180,17 @@ function Project() {
     );
   });
 
-  //  Sort Projects
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     if (!sortOption) return 0;
-
     let aValue = a[sortOption];
     let bValue = b[sortOption];
 
-    // Convert cost to number if sorting by cost
     if (sortOption === "cost") {
       aValue = Number(aValue);
       bValue = Number(bValue);
     }
 
-    // Convert client_id to client name for sorting by client
-    if (sortOption === "clientMap") {
+    if (sortOption === "client_id") {
       aValue = clientMap[aValue]?.toLowerCase() || "";
       bValue = clientMap[bValue]?.toLowerCase() || "";
     }
@@ -222,7 +207,6 @@ function Project() {
       <label className="heading">Project List</label>
       <br />
 
-      {/* Add Project Button */}
       <button className="clientbutton" onClick={() => setShowForm(true)}>
         Add Project +
       </button>
@@ -234,9 +218,7 @@ function Project() {
             <button className="close-btn" onClick={() => setShowForm(false)}>
               ×
             </button>
-            <h4>
-              {formMode === "update" ? "Update Project" : "Add New Project"}
-            </h4>
+            <h4>{formMode === "update" ? "Update Project" : "Add New Project"}</h4>
 
             <form onSubmit={handleSubmit}>
               <label>Project Name:</label>
@@ -273,9 +255,6 @@ function Project() {
                   </option>
                 ))}
               </select>
-
-              {errors.client && <p>{errors.client}</p>}
-
               {errors.client && <p>{errors.client}</p>}
 
               <label>Cost:</label>
@@ -297,8 +276,6 @@ function Project() {
       )}
 
       <div className="search-sort-bar">
-        {/*} <label className="search-sort-heading">Search Client</label>*/}
-
         <input
           type="text"
           placeholder="Search by name, description, or cost..."
@@ -306,7 +283,7 @@ function Project() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
         />
-        {/*} <label className="search-sort-heading">Search Client</label>*/}
+
         <select
           className="sort-dropdown"
           value={sortOption}
@@ -329,7 +306,7 @@ function Project() {
         </select>
       </div>
 
-      {/* Project Table */}
+      {/* Table */}
       {loading ? (
         <p>Loading projects...</p>
       ) : sortedProjects.length > 0 ? (
@@ -351,23 +328,19 @@ function Project() {
                 <tr key={index}>
                   <td>{proj.p_name}</td>
                   <td>{proj.description}</td>
-                  <td>{proj.full_name} </td>
+                  <td>{proj.full_name}</td>
                   <td>{proj.cost}</td>
                   <td>{proj.last_action || ""}</td>
                   <td>
                     <button onClick={() => handleUpdate(proj)}>Update</button>
-                    <button onClick={() => handleDelete(proj.project_id)}>
-                      Delete
-                    </button>
+                    <button onClick={() => handleDelete(proj.project_id)}>Delete</button>
                     <button
                       onClick={() =>
-                        navigate("/state", {
-                          state: { project_id: proj.project_id },
-                        })
+                        navigate("/state", { state: { project_id: proj.project_id } })
                       }
                     >
                       View
-                    </button>{" "}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -383,9 +356,19 @@ function Project() {
             fontWeight: "bolder",
           }}
         >
-          No projects Avaliable.
+          No projects available.
         </p>
       )}
+
+      {/*  Modal Integration */}
+      <Modal
+        show={modal.show}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm}
+        onClose={closeModal}
+      />
     </>
   );
 }

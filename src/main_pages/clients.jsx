@@ -7,6 +7,7 @@ import PrimaryCities from "../assests/cities.json";
 
 import { clientAPI } from "../services/backendservices.js";
 import MainPage from "./mainpage.jsx";
+import Modal from "../components/modal.jsx";
 
 function Client() {
   const [showForm, setShowForm] = useState(false);
@@ -18,17 +19,31 @@ function Client() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
+  const [modal, setModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    type: "",
+  });
 
   const cities = PrimaryCities.reduce((acc, item) => {
     if (!acc[item.state]) acc[item.state] = [];
     acc[item.state].push(item.name);
     return acc;
   }, {});
+  const toggleModal = (title, message, type = "info") => {
+    setModal({ show: true, title, message, type });
+
+    // keep modal visible for 2 seconds before auto-closing
+    setTimeout(() => {
+      setModal((prev) => ({ ...prev, show: false }));
+    }, 2000);
+  };
 
   useEffect(() => {
     fetchClients().catch((err) => {
       if (err.response?.status === 401) {
-        alert("Session expired. Please login again.");
+        toggleModal("Session Expired", "Please login again.", "error");
       }
     });
   }, []);
@@ -45,7 +60,7 @@ function Client() {
       }
     } catch (err) {
       console.error("Error fetching clients:", err);
-      alert("Failed to fetch clients. See console.");
+      toggleModal("Error", "Failed to fetch clients.", "error");
     } finally {
       setLoading(false);
     }
@@ -99,7 +114,7 @@ function Client() {
       }
 
       if (res?.data?.status) {
-        alert(res.data.msg);
+toggleModal("Success", res.data.msg, "success");
         setInputs({});
         setShowForm(false);
         fetchClients();
@@ -108,25 +123,28 @@ function Client() {
       }
     } catch (err) {
       console.error("Client submit error:", err);
-      alert("Error submitting client. See console.");
-    }
+toggleModal("Error", "Error submitting client. See console.", "error");    }
   }
 
   async function handleDelete(clientId) {
-    if (!window.confirm(`Are you sure you want to delete this client?`)) return;
-
+setModal({
+    show: true,
+    title: "Confirm Delete",
+    message: "Are you sure you want to delete this client?",
+    type: "warning",
+    onConfirm: async () => {
     try {
       const res = await clientAPI.deleteClient({ client_id: clientId });
       if (res?.data?.status) {
-        alert("Client deleted successfully");
+        toggleModal("Success", "Client deleted successfully", "success");
         setClients((prev) => prev.filter((c) => c.client_id !== clientId));
       } else {
         alert(res?.data?.error || "Failed to delete client");
       }
     } catch (err) {
       console.error("Delete client error:", err);
-      alert("Error deleting client. See console.");
-    }
+toggleModal("Error", "Error deleting client. See console.", "error");    }
+  },});
   }
 
   function handleUpdate(client) {
@@ -430,6 +448,15 @@ function Client() {
           </table>
         )}
       </div>
+     <Modal
+  show={modal.show}
+  onClose={() => setModal({ ...modal, show: false })}
+  title={modal.title}
+  message={modal.message}
+  type={modal.type}
+  onConfirm={modal.onConfirm}
+/>
+
     </>
   );
 }

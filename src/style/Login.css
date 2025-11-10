@@ -382,6 +382,7 @@ p {
   overflow: auto;
 }
 
+
 .popup-card {
   width: 450px;
   background: rgba(255, 255, 255, 0.25);
@@ -394,6 +395,7 @@ p {
   max-height: 90vh;
   overflow-y: auto;
 }
+
 
 .popup-card h4 {
   text-align: center;
@@ -411,6 +413,7 @@ p {
   background: none;
   border: none;
   color: #fff;
+  background-color: transparent;
   font-size: 15px;
   cursor: pointer;
   font-weight: bolder;
@@ -620,3 +623,42 @@ textarea {
   font-size: 18px;
   color: #333;
 }
+.task-history {
+  margin-top: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 10px 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.task-history h5 {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.task-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-history li {
+  border-bottom: 1px solid #ddd;
+  padding: 8px 0;
+}
+
+.history-desc {
+  margin: 0;
+  font-size: 14px;
+  color: #1e2e2e;
+}
+
+.history-date {
+  color: gray;
+  font-size: 12px;
+}
+#history{
+  color: white;
+}
+

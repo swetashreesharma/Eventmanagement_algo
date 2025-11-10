@@ -108,15 +108,20 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "../App.jsx";
 import { userAPI } from "../services/backendservices.js";
+import Modal from "../components/modal.jsx";
 function Login() {
   const [inputs, setInputs] = useState({});
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [modal,setModal]=useState({show:false,title:"",message:"",type:""});
   const navigate = useNavigate();
   const passwordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  const toggleModal=(title,message,type="info")=>{
+    setModal({show:true,title,message,type});
+  }
   function handleChange(e) {
     const name = e.target.name;
     const value = e.target.value;
@@ -149,17 +154,23 @@ function Login() {
         });
 
         console.log("login successful", res.data);
+                if (res.data.status) {
+
+        toggleModal("Success","Login Successfull","sucess");
         setMessage("login successful!");
-        if (res.data.status) {
-          localStorage.setItem("token", res.data.user.token);
+        setTimeout(() => {
+          
+            localStorage.setItem("token", res.data.user.token);
           localStorage.setItem("user", JSON.stringify(res.data.user));
           navigate("/mainpage");
+        }, 1500);
+        
         } else {
           alert(res.data.error || "Login failed");
         }
       } catch (err) {
         console.error("Login Error:", err);
-        alert("Invalid Email or Password!");
+        toggleModal("Error","Invalid Email or Password","error");
         setMessage(err.response?.data?.error || "Invalid email or password");
       }
     } else {
@@ -168,13 +179,9 @@ function Login() {
   }
   return (
     <>
-      {" "}
       <div className="divcard">
-        {" "}
         <form>
-          {" "}
           <div className="card">
-            {" "}
             <label id="head">LOGIN</label> <br /> <label>Email: </label>{" "}
             <input
               type="text"
@@ -183,30 +190,38 @@ function Login() {
               onChange={handleChange}
               placeholder="Enter Email"
               required
-            />{" "}
+            />
             <br /> {errors.email && <p>{errors.email}</p>}{" "}
             <label>Password: </label>{" "}
             <div className="password">
-              {" "}
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
                 value={inputs.password || ""}
                 onChange={handleChange}
                 placeholder="Enter Password"
-              />{" "}
+              />
               <button id="eye" type="button" onClick={passwordVisibility}>
-                {" "}
-                {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
-              </button>{" "}
-            </div>{" "}
-            <br /> {errors.password && <p>{errors.password}</p>}{" "}
-            <Link to="/forgotpassword"> Forgot Password</Link>{" "}
-            <Link to="/register"> Don't have an account?</Link> <br />{" "}
-            <button onClick={handleSubmit}>Login</button>{" "}
-          </div>{" "}
-        </form>{" "}
-      </div>{" "}
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            <br /> {errors.password && <p>{errors.password}</p>}
+            <Link to="/forgotpassword"> Forgot Password</Link>
+            <Link to="/register"> Don't have an account?</Link> <br />
+            <button onClick={handleSubmit}>Login</button>
+          </div>
+        </form>
+      </div>
+      <div>
+        <Modal
+        show={modal.show}
+        onClose={()=>setModal({...modal,show:false})}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        />
+
+      </div>
     </>
   );
 }

@@ -21,12 +21,12 @@ function State() {
   const [inputs, setInputs] = useState({ state_id: null, state_name: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [showItemForm, setShowItemForm] = useState(null);
-  const [newItem, setNewItem] = useState({ title: "", description: "" });
   const [loading, setLoading] = useState(false);
   const [allStates, setAllStates] = useState([]);
   const [task, setTask] = useState([]);
   const [taskDescription, setTaskDescription] = useState(false);
-
+  const [selectedTask, setSelectedTask] = useState([]);
+  const [taskHistory, setTaskHistory] = useState([]);
   const [showTaskForm, setShowTaskForm] = useState(null);
   const [taskInputs, setTaskInputs] = useState({
     task_name: "",
@@ -56,22 +56,38 @@ function State() {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+  const handleViewTask = async (task) => {
+    setSelectedTask(task);
+    setTaskDescription(true);
+    try {
+      const res = await taskAPI.getTaskHistoryById({ task_id: task.task_id });
+      setTaskHistory(res.data.data || []);
+    } catch (err) {
+      console.log("Error fetching history:", err);
+    }
+  };
   /*async function fetchTaskHistory(){
     try{
         const res =await taskAPI.getTaskHistoryById(task_id);
 
         if(res?.data?.status){
-          const data =res.data.data |
-        }
-
-    }catch(err){}
+          const data =res.data.data || [];
+          if(data.length === 0){
+          console.log("No task history found");
+          }
+          setTaskHistory(data);
+        }else{
+         console.log("getTaskHistory returned unexpected response:",res.data);
+        setTaskHistory([]); 
+}
+    }catch(err){
+    console.warn("Error fetching task history:",err?.response?.data || err.message);
+    if(err?.response?.sataus !== 404){}
+    }
+   
   }
+
 */
-
-
-
-
-
 
   // Modify fetchStates to call it
   async function fetchStates() {
@@ -100,24 +116,6 @@ function State() {
       }
     } catch (err) {
       console.error("Error fetching states/tasks:", err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleShowTask(task_id) {
-    try {
-      setLoading(true);
-      const res = await taskAPI.getTaskById({ task_id });
-      if (res?.data?.status) {
-        const task = res.data.data;
-        setTask(task);
-        alert(`Task: ${task.task_name}\nDescription: ${task.description}`);
-      } else {
-        alert("Task not found");
-      }
-    } catch (err) {
-      console.error("Error fetching task:", err);
     } finally {
       setLoading(false);
     }
@@ -472,7 +470,7 @@ function State() {
           </div>
         )}
 
-        {taskDescription && (
+        {taskDescription && selectedTask && (
           <div className="popup-overlay">
             <div className="popup-card">
               <button
@@ -483,11 +481,32 @@ function State() {
               </button>
               <h4>Task Info</h4>
               <form>
-                <label>Task Name:</label>
-                <p>{task.task_name}</p>
-                <label>Description:</label>
-                <p>{task.description}</p>
+                <strong>
+                  <label>Task Name:</label>
+                </strong>
+                <p id="history">{selectedTask.task_name}</p>
+                <strong>
+                  <label>Description:</label>
+                </strong>
+                <p id="history">{selectedTask.description}</p>
               </form>
+              <div className="task-history">
+                <h5>Task History</h5>
+                {taskHistory.length > 0 ? (
+                  <ul>
+                    {taskHistory.map((item) => (
+                      <li key={item.history_id}>
+                        <p className="history-desc">{item.description}</p>
+                        <small className="history-date">
+                          {new Date(item.changed_at).toLocaleString()}
+                        </small>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No history found.</p>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -563,7 +582,7 @@ function State() {
                                       : item.task_id
                                   )
                                 }
-                              className="menu-button"
+                                className="menu-button"
                               >
                                 <BsThreeDotsVertical />
                               </button>
@@ -578,7 +597,7 @@ function State() {
                                     borderRadius: "6px",
                                     boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
                                     zIndex: 10,
-                                    width:"100px"
+                                    width: "100px",
                                   }}
                                 >
                                   <button
@@ -607,9 +626,8 @@ function State() {
                                   </button>{" "}
                                   <button
                                     onClick={() => {
-                                      setTask(item);
                                       setActiveMenu(null);
-                                      setTaskDescription(true);
+                                      handleViewTask(item);
                                     }}
                                     className="state-task-button"
                                   >
@@ -634,4 +652,4 @@ function State() {
   );
 }
 
-export default State;
+export default State; 
