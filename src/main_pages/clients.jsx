@@ -5,10 +5,13 @@ import "../style/Login.css";
 import { useState, useEffect } from "react";
 import PrimaryCities from "../assests/cities.json";
 
-import { clientAPI } from "../services/backendservices.js";
-import MainPage from "./mainpage.jsx";
+import { clientAPI,projectAPI } from "../services/backendservices.js";
+import Sidebar from "./sidebar.jsx";
 import Modal from "../components/modal.jsx";
-
+import Table from "../components/Table/table.jsx";
+import SearchSortBar from "../components/SearchSortBar.jsx";
+import useSearchSort from "../hooks/useSearchSort.jsx";
+import PopupForm from "../components/Form/PopUpForm.jsx";
 function Client() {
   const [showForm, setShowForm] = useState(false);
   const [inputs, setInputs] = useState({});
@@ -18,6 +21,7 @@ function Client() {
   const [formMode, setFormMode] = useState("add");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
+  const[projects,setprojects]=useState([]);
   const [sortDirection, setSortDirection] = useState("asc");
   const [modal, setModal] = useState({
     show: false,
@@ -46,6 +50,7 @@ function Client() {
         toggleModal("Session Expired", "Please login again.", "error");
       }
     });
+    fetchProjects();
   }, []);
 
   async function fetchClients() {
@@ -114,7 +119,7 @@ function Client() {
       }
 
       if (res?.data?.status) {
-toggleModal("Success", res.data.msg, "success");
+        toggleModal("Success", res.data.msg, "success");
         setInputs({});
         setShowForm(false);
         fetchClients();
@@ -123,28 +128,31 @@ toggleModal("Success", res.data.msg, "success");
       }
     } catch (err) {
       console.error("Client submit error:", err);
-toggleModal("Error", "Error submitting client. See console.", "error");    }
+      toggleModal("Error", "Error submitting client. See console.", "error");
+    }
   }
 
   async function handleDelete(clientId) {
-setModal({
-    show: true,
-    title: "Confirm Delete",
-    message: "Are you sure you want to delete this client?",
-    type: "warning",
-    onConfirm: async () => {
-    try {
-      const res = await clientAPI.deleteClient({ client_id: clientId });
-      if (res?.data?.status) {
-        toggleModal("Success", "Client deleted successfully", "success");
-        setClients((prev) => prev.filter((c) => c.client_id !== clientId));
-      } else {
-        alert(res?.data?.error || "Failed to delete client");
-      }
-    } catch (err) {
-      console.error("Delete client error:", err);
-toggleModal("Error", "Error deleting client. See console.", "error");    }
-  },});
+    setModal({
+      show: true,
+      title: "Confirm Delete",
+      message: "Are you sure you want to delete this client?",
+      type: "warning",
+      onConfirm: async () => {
+        try {
+          const res = await clientAPI.deleteClient({ client_id: clientId });
+          if (res?.data?.status) {
+            toggleModal("Success", "Client deleted successfully", "success");
+            setClients((prev) => prev.filter((c) => c.client_id !== clientId));
+          } else {
+            alert(res?.data?.error || "Failed to delete client");
+          }
+        } catch (err) {
+          console.error("Delete client error:", err);
+          toggleModal("Error", "Error deleting client. See console.", "error");
+        }
+      },
+    });
   }
 
   function handleUpdate(client) {
@@ -164,36 +172,45 @@ toggleModal("Error", "Error deleting client. See console.", "error");    }
     });
   }
   // 🔍 Filter clients
-  const filteredClients = clients.filter((c) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      c.f_name?.toLowerCase().includes(term) ||
-      c.l_name?.toLowerCase().includes(term) ||
-      c.email?.toLowerCase().includes(term) ||
-      c.city_name?.toLowerCase().includes(term)
-    );
-  });
+  const sortedClients = useSearchSort(
+    clients,
+    searchTerm,
+    sortOption,
+    sortDirection,
+    ["f_name", "l_name", "email", "city_name"] // searchable fields
+  );
 
-  const sortedClients = [...filteredClients].sort((a, b) => {
-    if (!sortOption) return 0;
+  async function fetchProjects(){
+    try{
+        const res= await projectAPI.getAllProjects();
+        if(res?.data?.status){
+          setprojects(res.data.data || []);
+        }
+        else{
+          setprojects([]);
+        }
 
-    let aValue = a[sortOption];
-    let bValue = b[sortOption];
 
-    // Special handling for Date of Birth
-    if (sortOption === "dob") {
-      aValue = new Date(aValue);
-      bValue = new Date(bValue);
     }
+    catch(err){
+        console.warn("Error fetching projects:",err?.response?.data ||err.message);
+    }
+  }
 
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
+  const projectMap = projects.reduce((acc, p) => {
+  if (!acc[p.client_id]) acc[p.client_id] = [];
+  acc[p.client_id].push(p.p_name); // or p.full_name, whichever you want
+  return acc;
+}, {});
+const clientsWithProjects = sortedClients.map((c) => ({
+  ...c,
+  Project: projectMap[c.client_id]?.join(", ") || "—", // show names or "—"
+}));
+
+
 
   return (
     <>
-      <MainPage />
       <br />
       <label className="heading">Client list</label>
       <br />
@@ -211,252 +228,123 @@ toggleModal("Error", "Error deleting client. See console.", "error");    }
       </button>
       {/* Popup form */}
       {showForm && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <button className="close-btn" onClick={() => setShowForm(false)}>
-              ×
-            </button>
-            <h4>
-              {formMode === "update" ? "Update Client" : "Add New Client"}
-            </h4>
-
-            <form onSubmit={handleSubmit}>
-              <label>First Name:</label>
-              <input
-                name="f_name"
-                value={inputs.f_name || ""}
-                onChange={handleChange}
-                placeholder="First name"
-              />
-              {errors.f_name && <p className="error">{errors.f_name}</p>}
-
-              <label>Last Name:</label>
-              <input
-                name="l_name"
-                value={inputs.l_name || ""}
-                onChange={handleChange}
-                placeholder="Last name (optional)"
-              />
-
-              <label>Email:</label>
-              <input
-                name="email"
-                value={inputs.email || ""}
-                onChange={handleChange}
-                placeholder="Email"
-                disabled={formMode === "update"}
-              />
-              {errors.email && <p className="error">{errors.email}</p>}
-
-              <label>Date Of Birth:</label>
-              <input
-                type="date"
-                name="dob"
-                value={inputs.dob || ""}
-                onChange={handleChange}
-              />
-              {errors.dob && <p className="error">{errors.dob}</p>}
-
-              <label>Gender:</label>
-              <div className="gender-options">
-                <label>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="Male"
-                    checked={inputs.gender === "Male"}
-                    onChange={handleChange}
-                  />{" "}
-                  Male
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="Female"
-                    checked={inputs.gender === "Female"}
-                    onChange={handleChange}
-                  />{" "}
-                  Female
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="Other"
-                    checked={inputs.gender === "Other"}
-                    onChange={handleChange}
-                  />{" "}
-                  Other
-                </label>
-              </div>
-
-              <label>State:</label>
-              <select
-                name="state"
-                value={inputs.state || ""}
-                onChange={(e) => {
-                  handleChange(e);
-                  /* clear city when state changes */ setInputs((prev) => ({
-                    ...prev,
-                    city_name: "",
-                  }));
-                }}
-              >
-                <option value="">Select State</option>
-                {Object.keys(cities).map((s, i) => (
-                  <option key={i} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-
-              {inputs.state && (
-                <>
-                  <label>City:</label>
-                  <select
-                    name="city_name"
-                    value={inputs.city_name || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="">Select City</option>
-                    {cities[inputs.state]?.map((c, i) => (
-                      <option key={i} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.city_name && (
-                    <p className="error">{errors.city_name}</p>
-                  )}
-                </>
-              )}
-
-              <label>Number:</label>
-              <input
-                name="phone"
-                value={inputs.phone || ""}
-                onChange={handleChange}
-                placeholder="10-digit phone"
-              />
-              {errors.phone && <p className="error">{errors.phone}</p>}
-
-              <label>Note:</label>
-              <textarea
-                name="note"
-                value={inputs.note || ""}
-                onChange={handleChange}
-                rows="3"
-              />
-
-              <button className="submit-btn" type="submit">
-                {formMode === "update" ? "Update Client" : "Add Client"}
-              </button>
-            </form>
-          </div>
-        </div>
+        <PopupForm
+          title="Client"
+          formMode={formMode}
+          inputs={inputs}
+          errors={errors}
+          handleChange={handleChange}
+          handleSubmit={handleSubmit}
+          setShowForm={setShowForm}
+          fields={[
+            {
+              label: "First Name:",
+              name: "f_name",
+              type: "text",
+              placeholder: "First name",
+            },
+            {
+              label: "Last Name:",
+              name: "l_name",
+              type: "text",
+              placeholder: "Last name (optional)",
+            },
+            {
+              label: "Email:",
+              name: "email",
+              type: "text",
+              placeholder: "Email",
+              disabled: formMode === "update",
+            },
+            { label: "Date Of Birth:", name: "dob", type: "date" },
+            {
+              label: "Gender:",
+              name: "gender",
+              type: "radio",
+              options: [
+                { label: "Male", value: "Male" },
+                { label: "Female", value: "Female" },
+                { label: "Other", value: "Other" },
+              ],
+            },
+            {
+              label: "State:",
+              name: "state",
+              type: "select",
+              placeholder: "Select State",
+              options: Object.keys(cities).map((s) => ({ label: s, value: s })),
+            },
+            ...(inputs.state
+              ? [
+                  {
+                    label: "City:",
+                    name: "city_name",
+                    type: "select",
+                    placeholder: "Select City",
+                    options: cities[inputs.state]?.map((c) => ({
+                      label: c,
+                      value: c,
+                    })),
+                  },
+                ]
+              : []),
+            {
+              label: "Number:",
+              name: "phone",
+              type: "text",
+              placeholder: "10-digit phone",
+            },
+            { label: "Note:", name: "note", type: "textarea", rows: 3 },
+          ]}
+        />
       )}
 
       {/* Table showing clients */}
 
-      <div className="search-sort-bar">
-        {/*} <label className="search-sort-heading">Search Client</label>*/}
+      <SearchSortBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+        searchPlaceholder="Search by name, email, or city..."
+        sortOptions={[
+          { value: "f_name", label: "First Name" },
+          { value: "l_name", label: "Last Name" },
+          { value: "email", label: "Email" },
+          { value: "dob", label: "Date of Birth" },
+        ]}
+      />
 
-        <input
-          type="text"
-          placeholder="Search by name, email, or city..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-        {/*} <label className="search-sort-heading">Search Client</label>*/}
-        <select
-          className="sort-dropdown"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="">Sort by...</option>
-          <option value="f_name">First Name</option>
-          <option value="l_name">Last Name</option>
-          <option value="email">Email</option>
-          <option value="dob">Date of Birth</option>
-        </select>
+      <Table
+        columns={[
+          { header: "First", field: "f_name" },
+          { header: "Last", field: "l_name" },
+          { header: "Email", field: "email" },
+          { header: "DOB", field: "dob", isDate: true },
+          { header: "Gender", field: "gender" },
+          { header: "State", field: "state_name" },
+          { header: "City", field: "city_name" },
+          { header: "Phone", field: "phone" },
+          { header: "Note", field: "note", isNote: true },
+          {header: "projects", field:"Project"}
+        ]}
 
-        <select
-          className="sort-direction-dropdown"
-          value={sortDirection}
-          onChange={(e) => setSortDirection(e.target.value)}
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
+        data={clientsWithProjects}
+        loading={loading}
+        onUpdate={handleUpdate}
+        onDeleteClient={handleDelete}
+      />
 
-      <div className="client-table">
-        <br />
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>First</th>
-                <th>Last</th>
-                <th>Email</th>
-                <th>DOB</th>
-                <th>Gender</th>
-                <th>State</th>
-                <th>City</th>
-                <th>Phone</th>
-                <th>Note</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedClients.length === 0 ? (
-                <tr>
-                  <td colSpan="9">No matching clients</td>
-                </tr>
-              ) : (
-                sortedClients.map((c, i) => (
-                  <tr key={i}>
-                    <td>{c.f_name}</td>
-                    <td>{c.l_name}</td>
-                    <td>{c.email}</td>
-                    <td>{c.dob ? c.dob.split("T")[0] : ""}</td>
-                    <td>{c.gender}</td>
-                    <td>{c.state_name}</td>
-                    <td>{c.city_name}</td>
-                    <td>{c.phone}</td>
-                    <td title={c.note}>
-                      {c.note?.length > 30
-                        ? c.note.substring(0, 30) + "..."
-                        : c.note}
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: "10px" }}>
-                        <button onClick={() => handleUpdate(c)}>Update</button>
-                        <button onClick={() => handleDelete(c.client_id)}>
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-     <Modal
-  show={modal.show}
-  onClose={() => setModal({ ...modal, show: false })}
-  title={modal.title}
-  message={modal.message}
-  type={modal.type}
-  onConfirm={modal.onConfirm}
-/>
-
+      <Modal
+        show={modal.show}
+        onClose={() => setModal({ ...modal, show: false })}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onConfirm={modal.onConfirm}
+      />
     </>
   );
 }

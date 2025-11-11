@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Modal from "../modal.jsx";
+import "../../style/auth/authForm.css";
 
-function AuthForm({
-  title,
-  fields,
-  onSubmit,
-  linkList = [],
-  extraProps = {}, // optional props like {cities, inputsStateKey, ...}
-}) {
+function AuthForm({ title, fields, onSubmit, linkList = [], extraProps = {} }) {
   const [inputs, setInputs] = useState({});
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState({});
-  const [modal, setModal] = useState({ show: false, title: "", message: "", type: "" });
+  const [modal, setModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    type: "",
+  });
 
   const toggleModal = (title, message, type = "info") => {
     setModal({ show: true, title, message, type });
@@ -32,11 +32,12 @@ function AuthForm({
     onSubmit({ inputs, setInputs, setErrors, toggleModal });
   };
 
-  // For dynamic city dropdown if cities are provided
   const [citiesOptions, setCitiesOptions] = useState([]);
   useEffect(() => {
     if (extraProps.cities && inputs[extraProps.inputsStateKey]) {
-      setCitiesOptions(extraProps.cities[inputs[extraProps.inputsStateKey]] || []);
+      setCitiesOptions(
+        extraProps.cities[inputs[extraProps.inputsStateKey]] || []
+      );
     }
   }, [inputs, extraProps]);
 
@@ -46,7 +47,7 @@ function AuthForm({
         <form onSubmit={handleSubmit}>
           <div className="card">
             <label id="head">{title}</label>
-            <br />
+
             {fields.map((field, idx) => {
               const {
                 label,
@@ -64,21 +65,25 @@ function AuthForm({
               const showPassword = showPasswordFields[name];
 
               return (
-                <div key={idx} className="field-wrapper">
+                <div key={idx}>
                   <label>{label}</label>
+                  <br />
                   {type === "select" ? (
                     <select
                       name={name}
                       value={inputs[name] || ""}
                       onChange={handleChange}
                       disabled={disabled}
+                      className="auth"
                     >
                       <option value="">Select {label}</option>
-                      {(options || (name === "city" ? citiesOptions : []))?.map((opt, i) => (
-                        <option key={i} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
+                      {(options || (name === "city" ? citiesOptions : []))?.map(
+                        (opt, i) => (
+                          <option key={i} value={opt}>
+                            {opt}
+                          </option>
+                        )
+                      )}
                     </select>
                   ) : isPassword ? (
                     <div className="password">
@@ -89,6 +94,7 @@ function AuthForm({
                         onChange={handleChange}
                         placeholder={placeholder}
                         disabled={disabled}
+                        className="auth"
                       />
                       <button
                         type="button"
@@ -106,19 +112,24 @@ function AuthForm({
                       onChange={handleChange}
                       placeholder={placeholder}
                       disabled={disabled}
+                                              className="auth"
+
                     />
                   )}
-                  <br />
+
                   {errors[name] && <p>{errors[name]}</p>}
                 </div>
               );
             })}
-            <button type="submit">Submit</button>
+            <br />
             {linkList.map((link, idx) => (
-              <div key={idx}>
+              <div key={idx} id="link">
                 <a href={link.to}>{link.label}</a>
+                <br />
               </div>
             ))}
+            <br />
+            <button type="submit">Submit</button>
           </div>
         </form>
       </div>

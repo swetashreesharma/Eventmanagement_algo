@@ -2,7 +2,7 @@
 import "../../style/Login.css";
 
 import { useState, useEffect } from "react";
-import MainPage from "../mainpage";
+//import MainPage from "../mainpage";
 import { useLocation } from "react-router-dom";
 import { stateAPI } from "../../services/backendservices";
 import { MdDelete } from "react-icons/md";

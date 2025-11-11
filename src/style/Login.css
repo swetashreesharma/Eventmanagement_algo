@@ -1,11 +1,7 @@
 #root {
   padding: 2rem;
 }
-.password {
-  display: grid;
-  margin: 5px;
-  grid-template-columns: 85% 15%;
-}
+
 .card {
   padding: 2em;
   color: white;
@@ -34,11 +30,17 @@ button:hover {
   background-color: #1e2e2e;
   color: aliceblue;
 }
+.password {
+  display: grid;
+  grid-template-columns: 85% 15%;
+}
+
 input,
 button,
 select {
   height: 35px;
   padding: 4px 12px;
+  margin: 7px;
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 16px;
@@ -52,17 +54,13 @@ select {
   text-align: center;
   border-radius: 8px;
 }
-a {
+#link {
   text-align: center;
 }
 p {
   color: red;
 }
-.password {
-  display: grid;
-  margin: 5px;
-  grid-template-columns: 85% 15%;
-}
+
 .divcard label {
   color: #1e2e2e;
 }
@@ -267,6 +265,8 @@ p {
   background-color: aliceblue;
   color: #1e2e2e;
 }
+radio {
+}
 
 /* ==================== SEARCH & SORT ==================== */
 .search-sort-bar {
@@ -297,7 +297,7 @@ p {
   background-color: rgba(255, 255, 255, 0.85);
   font-size: 15px;
   outline: none;
-  min-width: 180px;
+  width: 180px;
   transition: all 0.2s ease;
 }
 
@@ -359,6 +359,7 @@ p {
   font-size: 14px;
   margin-right: 5px;
   transition: all 0.2s ease;
+  width: 60px;
 }
 
 .client-table button:hover {
@@ -382,7 +383,6 @@ p {
   overflow: auto;
 }
 
-
 .popup-card {
   width: 450px;
   background: rgba(255, 255, 255, 0.25);
@@ -395,7 +395,6 @@ p {
   max-height: 90vh;
   overflow-y: auto;
 }
-
 
 .popup-card h4 {
   text-align: center;
@@ -502,30 +501,89 @@ textarea {
   z-index: 1001;
 }
 
-/* Sidebar Animation */
+.main-content {
+  transition: margin-left 0.4s ease;
+  margin-left: 0;
+}
+
+.main-content.shifted {
+  margin-left: 250px;
+  }
+
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 250px;
   height: 100vh;
-  padding: 20px;
-  background-color: rgba(234, 236, 240, 0.3);
+  background-color: transparent;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 8px rgba(106, 101, 101, 0.19);
   border-radius: 0 15px 15px 0;
-  color: white;
-  transform: translateX(-100%);
-  transition: transform 0.4s ease;
+  transition: all 0.4s ease;
   z-index: 1000;
+  overflow: hidden;
+  
 }
 
 .sidebar.open {
-  transform: translateX(0);
+  width: 250px;
 }
 
-.sidebar.closed {
-  transform: translateX(-100%);
+.sidebar.collapsed {
+  width: 80px;
+}
+
+.data {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 60px;
+  cursor: pointer;
+  background-color: #1e2e2e;
+  transition: background 0.3s;
+  border-radius: 8px;
+}
+
+.data:hover {
+  background-color: white(255, 255, 255, 0.5);
+}
+
+.menu-icon {
+  position: fixed;
+  background-color: #1e2e2e;
+  left: 30px;
+  font-size: 18px;
+  color: white;
+  border: none;
+  width: 45px;
+  height: 20px;
+}
+
+.menu-icon:hover {
+  position: fixed;
+  background-color: white;
+  left: 30px;
+  font-size: 18px;
+  color: #1e2e2e;
+  border: none;
+}
+
+.sidebar.collapsed .data span {
+  display: none;
+}
+
+.sidebar.collapsed .data {
+  justify-content: center;
+}
+
+.main-content {
+  transition: margin-left 0.4s ease;
+  margin-left: 0;
+  padding: 20px;
+}
+
+.main-content.shifted {
+  margin-left: 250px;
 }
 /*===============================project=================================*/
 /*------------------------------state---------------------------------------*/
@@ -563,8 +621,8 @@ textarea {
 .small-btn {
   background-color: transparent;
   margin: 2px;
-  color:white;
-  border:none;
+  color: white;
+  border: none;
 }
 .add-item-btn {
   background-color: #1e2e2e;
@@ -661,7 +719,13 @@ textarea {
   color: gray;
   font-size: 12px;
 }
-#history{
+#history {
   color: white;
 }
 
+input.client-project-form {
+  width: 370px;
+}
+select.client-project-form {
+  width: 370px;
+}

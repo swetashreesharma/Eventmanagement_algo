@@ -1,0 +1,82 @@
+#root {
+  padding: 2rem;
+}
+
+.card {
+  margin-top: 100px;
+
+  padding: 2em;
+  color: white;
+  width: 425px;
+  left: 0;
+  padding: 20px;
+  border-radius: 15px;
+  background-color: rgba(255, 255, 255, 0.726);
+  box-shadow: 0 4px 8px 0 rgba(106, 101, 101, 0.19),
+    0 6px 20px 0 rgba(106, 101, 101, 0.19);
+}
+.divcard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+button:hover {
+  background-color: #1e2e2e;
+  color: aliceblue;
+}
+.password {
+  display: grid;
+  grid-template-columns: 85% 15%;
+}
+button {
+  height: 35px;
+  padding: 4px 12px;
+  margin: 7px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+input,select {
+  height: 35px;
+  padding: 4px 12px;
+  margin: 7px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+.auth{
+  width: 370px;
+}
+#head {
+  background-color: #1e2e2e;
+  color: white;
+  margin: 10px;
+  height: 35px;
+  padding: 4px 12px;
+  text-align: center;
+  border-radius: 8px;
+}
+#link {
+  text-align: center;
+}
+p {
+  color: red;
+}
+
+.divcard label {
+  margin-top: 10px;
+  color: #1e2e2e;
+}
+#eye {
+  margin-top: 8px;
+  margin-left: 2px;
+  background-color: transparent;
+  color: #1e2e2e;
+  height: 0px;
+  border: none;
+}

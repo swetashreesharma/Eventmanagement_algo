@@ -1,6 +1,6 @@
 import "../../style/Login.css";
 import { useState, useEffect } from "react";
-import MainPage from "../mainpage";
+//import MainPage from "../sidebar.jsx";
 import { useLocation } from "react-router-dom";
 import { stateAPI, taskAPI } from "../../services/backendservices";
 import { MdDelete } from "react-icons/md";
@@ -258,7 +258,6 @@ function State() {
 
   return (
     <>
-      <MainPage />
 
       {/* MODAL */}
       <Modal

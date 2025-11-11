@@ -1,10 +1,14 @@
 import "../style/Login.css";
 import { useState, useEffect } from "react";
-import MainPage from "./mainpage";
+//import Sidebar from "./sidebar.jsx";
 import axios from "axios";
 import { clientAPI, projectAPI } from "../services/backendservices";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/modal.jsx"; // import modal
+import Table from "../components/Table/table.jsx";
+import SearchSortBar from "../components/SearchSortBar.jsx";
+import useSearchSort from "../hooks/useSearchSort.jsx";
+import PopupForm from "../components/Form/PopUpForm.jsx";
 
 function Project() {
   const [showForm, setShowForm] = useState(false);
@@ -169,40 +173,17 @@ function Project() {
   }
 
   // Filter + Sort Projects
-  const filteredProjects = projects.filter((p) => {
-    const term = searchTerm.toLowerCase();
-    const clientName = clientMap[p.client_id]?.toLowerCase() || "";
-    return (
-      p.p_name?.toLowerCase().includes(term) ||
-      p.description?.toLowerCase().includes(term) ||
-      clientName.includes(term) ||
-      String(p.cost).toLowerCase().includes(term)
-    );
-  });
+  const sortedProjects = useSearchSort(
+  projects,
+  searchTerm,
+  sortOption,
+  sortDirection,
+  ["p_name", "description", "full_name", "cost"] // searchable fields
+);
 
-  const sortedProjects = [...filteredProjects].sort((a, b) => {
-    if (!sortOption) return 0;
-    let aValue = a[sortOption];
-    let bValue = b[sortOption];
-
-    if (sortOption === "cost") {
-      aValue = Number(aValue);
-      bValue = Number(bValue);
-    }
-
-    if (sortOption === "client_id") {
-      aValue = clientMap[aValue]?.toLowerCase() || "";
-      bValue = clientMap[bValue]?.toLowerCase() || "";
-    }
-
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
 
   return (
     <>
-      <MainPage />
       <br />
       <label className="heading">Project List</label>
       <br />
@@ -211,142 +192,73 @@ function Project() {
         Add Project +
       </button>
 
-      {/* Popup Form */}
-      {showForm && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <button className="close-btn" onClick={() => setShowForm(false)}>
-              ×
-            </button>
-            <h4>{formMode === "update" ? "Update Project" : "Add New Project"}</h4>
+     {showForm && (
+  <PopupForm
+    title="Project"
+    formMode={formMode}
+    inputs={inputs}
+    errors={errors}
+    handleChange={handleChange}
+    handleSubmit={handleSubmit}
+    setShowForm={setShowForm}
+    fields={[
+      { label: "Project Name:", name: "name", type: "text", placeholder: "Enter Project Name" },
+      { label: "Note:", name: "note", type: "textarea", placeholder: "Enter project description", rows: 2 },
+      {
+        label: "Client:",
+        name: "client",
+        type: "select",
+        placeholder: "Select Client",
+        disabled: formMode === "update",
+        options: clients.map((c) => ({
+          value: c.client_id,
+          label: `${c.f_name} ${c.l_name} – ${c.city_name}`,
+        })),
+      },
+      { label: "Cost:", name: "cost", type: "text", placeholder: "Enter Cost" },
+    ]}
+  />
+)}
 
-            <form onSubmit={handleSubmit}>
-              <label>Project Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={inputs.name || ""}
-                onChange={handleChange}
-                placeholder="Enter Project Name"
-              />
-              {errors.name && <p>{errors.name}</p>}
-
-              <label>Note:</label>
-              <textarea
-                name="note"
-                value={inputs.note || ""}
-                onChange={handleChange}
-                placeholder="Enter description about the Project"
-                rows="2"
-              ></textarea>
-              {errors.note && <p>{errors.note}</p>}
-
-              <label>Client:</label>
-              <select
-                name="client"
-                value={inputs.client || ""}
-                onChange={handleChange}
-                disabled={formMode === "update"}
-              >
-                <option value="">Select Client</option>
-                {clients.map((c) => (
-                  <option key={c.client_id} value={c.client_id}>
-                    {c.f_name} {c.l_name} – {c.city_name}
-                  </option>
-                ))}
-              </select>
-              {errors.client && <p>{errors.client}</p>}
-
-              <label>Cost:</label>
-              <input
-                type="text"
-                name="cost"
-                value={inputs.cost || ""}
-                onChange={handleChange}
-                placeholder="Enter Cost"
-              />
-              {errors.cost && <p>{errors.cost}</p>}
-
-              <button className="submit-btn" type="submit">
-                {formMode === "update" ? "Update Project" : "Add Project"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <div className="search-sort-bar">
-        <input
-          type="text"
-          placeholder="Search by name, description, or cost..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
-        />
-
-        <select
-          className="sort-dropdown"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="">Sort by...</option>
-          <option value="p_name">Project Name</option>
-          <option value="description">Description</option>
-          <option value="client_id">Client</option>
-          <option value="cost">Cost</option>
-        </select>
-
-        <select
-          className="sort-direction-dropdown"
-          value={sortDirection}
-          onChange={(e) => setSortDirection(e.target.value)}
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
+<SearchSortBar
+  searchTerm={searchTerm}
+  setSearchTerm={setSearchTerm}
+  sortOption={sortOption}
+  setSortOption={setSortOption}
+  sortDirection={sortDirection}
+  setSortDirection={setSortDirection}
+  searchPlaceholder="Search by name, description, or cost..."
+  sortOptions={[
+    { value: "p_name", label: "Project Name" },
+    { value: "description", label: "Description" },
+    { value: "full_name", label: "Client" },
+    { value: "cost", label: "Cost" },
+  ]}
+/>
 
       {/* Table */}
       {loading ? (
         <p>Loading projects...</p>
       ) : sortedProjects.length > 0 ? (
-        <div className="client-table">
-          <br />
-          <table border="1" cellPadding="8">
-            <thead>
-              <tr>
-                <th>Project Name</th>
-                <th>Description</th>
-                <th>Client</th>
-                <th>Cost</th>
-                <th>Last Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedProjects.map((proj, index) => (
-                <tr key={index}>
-                  <td>{proj.p_name}</td>
-                  <td>{proj.description}</td>
-                  <td>{proj.full_name}</td>
-                  <td>{proj.cost}</td>
-                  <td>{proj.last_action || ""}</td>
-                  <td>
-                    <button onClick={() => handleUpdate(proj)}>Update</button>
-                    <button onClick={() => handleDelete(proj.project_id)}>Delete</button>
-                    <button
-                      onClick={() =>
-                        navigate("/state", { state: { project_id: proj.project_id } })
-                      }
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table
+  columns={[
+    { header: "Project Name", field: "p_name" },
+    { header: "Description", field: "description", isNote: true },
+    { header: "Client", field: "full_name" },
+    { header: "Cost", field: "cost" },
+    { header: "Last Status", field: "last_action" },
+  ]}
+  data={sortedProjects}
+  loading={loading}
+  onUpdate={handleUpdate}
+  onDeleteProject={handleDelete}
+  extraAction={(proj) => (
+    <button onClick={() => navigate("/state", { state: { project_id: proj.project_id } })}>
+      View
+    </button>
+  )}
+/>
+
       ) : (
         <p
           style={{

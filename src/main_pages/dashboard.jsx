@@ -1,8 +1,7 @@
-import MainPage from "./mainpage";
+//import Sidebar from "./sidebar";
 function DashBoard(){
     return(
         <>
-        <MainPage/>
         <div>
             </div></>
     )

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../style/Login.css";
 import PrimaryCities from "../assests/cities.json";
-import MainPage from "./mainpage.jsx";
+//import Sidebar from "./sidebar.jsx";
 import { userAPI } from "../services/backendservices.js";
 import Modal from "../components/modal.jsx"; // import your existing modal
 
@@ -122,7 +122,7 @@ const toggleModal=(title,message,type="info")=>{
 
   return (
     <>
-      <MainPage />
+    
       <div className="profile-container">
         <h5 className="profile-heading">Profile Page</h5>
 
