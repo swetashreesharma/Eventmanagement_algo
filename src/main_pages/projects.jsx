@@ -236,10 +236,10 @@ function Project() {
   ]}
 />
 
-      {/* Table */}
+      {/*  
       {loading ? (
         <p>Loading projects...</p>
-      ) : sortedProjects.length > 0 ? (
+      ) : sortedProjects.length > 0 ? (*/}
         <Table
   columns={[
     { header: "Project Name", field: "p_name" },
@@ -259,7 +259,7 @@ function Project() {
   )}
 />
 
-      ) : (
+     {/*} ) : (
         <p
           style={{
             textAlign: "center",
@@ -271,7 +271,7 @@ function Project() {
           No projects available.
         </p>
       )}
-
+*/}
       {/*  Modal Integration */}
       <Modal
         show={modal.show}

@@ -21,7 +21,7 @@ function Table({ columns, data, loading, onUpdate, onDeleteClient,onDeleteProjec
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + 1}>No matching records</td>
+                <td colSpan={columns.length + 1}>No Data records</td>
               </tr>
             ) : (
               data.map((row, i) => (

@@ -1,12 +1,14 @@
 import "../../style/Login.css";
 import { useState, useEffect } from "react";
-//import MainPage from "../sidebar.jsx";
 import { useLocation } from "react-router-dom";
 import { stateAPI, taskAPI } from "../../services/backendservices";
 import { MdDelete } from "react-icons/md";
 import { FaPencilAlt } from "react-icons/fa";
 import Task from "./task";
-import Modal from "../../components/modal.jsx"; // import your modal component
+import Modal from "../../components/modal.jsx";
+import StateForm from "../../components/StateComponent/StateForm.jsx";
+import TaskForm from "../../components/StateComponent/TaskForm.jsx";
+import KanbanBoard from "../../components/StateComponent/KanbanBoard.jsx";
 
 function State() {
   const location = useLocation();
@@ -20,7 +22,10 @@ function State() {
   const [allStates, setAllStates] = useState([]);
 
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [taskInputs, setTaskInputs] = useState({ task_name: "", description: "" });
+  const [taskInputs, setTaskInputs] = useState({
+    task_name: "",
+    description: "",
+  });
   const [selectedStateName, setSelectedStateName] = useState(null);
 
   // MODAL STATES
@@ -41,7 +46,9 @@ function State() {
       setLoading(true);
       const res = await stateAPI.getAllStates({ project_id });
       if (res?.data?.status && Array.isArray(res.data.data)) {
-        const states = [...res.data.data].sort((a, b) => a.state_id - b.state_id);
+        const states = [...res.data.data].sort(
+          (a, b) => a.state_id - b.state_id
+        );
         setAllStates(states);
 
         const taskRes = await taskAPI.getAllTasks({ project_id });
@@ -145,7 +152,9 @@ function State() {
       type: "confirm",
       onConfirm: async () => {
         try {
-          const res = await stateAPI.deleteState({ state_id: selected.state_id });
+          const res = await stateAPI.deleteState({
+            state_id: selected.state_id,
+          });
           if (res?.data?.status) {
             fetchStates();
           }
@@ -193,6 +202,8 @@ function State() {
         description: itemToMove.description,
         current_state_id: targetState.state_id,
       });
+            fetchStates();
+
     } catch (err) {
       console.error("Error updating task:", err);
       setModalProps({
@@ -258,131 +269,63 @@ function State() {
 
   return (
     <>
-
-      {/* MODAL */}
-      <Modal
-        {...modalProps}
-        onClose={() => setModalProps((prev) => ({ ...prev, show: false }))}
-      />
-
+      <div className="state">
+        {/* MODAL */}
+        <Modal
+          {...modalProps}
+          onClose={() => setModalProps((prev) => ({ ...prev, show: false }))}
+        />
+        {/* ADD TASK MODAL */}
       {/* ADD TASK MODAL */}
-      {showTaskForm && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <button
-              className="close-btn"
-              onClick={() => {
-                setShowTaskForm(false);
-                setTaskInputs({ task_name: "", description: "" });
-              }}
-            >
-              ×
-            </button>
-            <h4>Add Task to "{selectedStateName}"</h4>
-            <form onSubmit={handleAddTask}>
-              <input
-                type="text"
-                name="task_name"
-                value={taskInputs.task_name}
-                onChange={handleTaskInputChange}
-                placeholder="Enter Task Name"
-              />
-              <textarea
-                name="description"
-                value={taskInputs.description}
-                onChange={handleTaskInputChange}
-                placeholder="Enter Task Description"
-              />
-              <button type="submit">Add Task</button>
-            </form>
-          </div>
-        </div>
-      )}
+<TaskForm
+  show={showTaskForm}
+  selectedStateName={selectedStateName}
+  taskInputs={taskInputs}
+  onChange={handleTaskInputChange}
+  onSubmit={handleAddTask}
+  onClose={() => {
+    setShowTaskForm(false);
+    setTaskInputs({ task_name: "", description: "" });
+  }}
+/>
 
-      <br />
-      <label className="heading">State List</label>
-      <br />
-      <button className="clientbutton" onClick={() => setShowForm(true)}>
-        + Add State
-      </button>
+        <br />
+        <label className="heading">State List</label>
+        <br />
+        <button className="clientbutton" onClick={() => setShowForm(true)}>
+          + Add State
+        </button>
 
-      {/* STATE MODAL */}
-      {showForm && (
-        <div className="popup-overlay">
-          <div className="popup-card">
-            <button
-              className="close-btn"
-              onClick={() => {
-                setShowForm(false);
-                setIsEditing(false);
-                setInputs({ state_id: null, state_name: "" });
-              }}
-            >
-              ×
-            </button>
-            <h4>{isEditing ? "Edit State" : "Add New State"}</h4>
-            <form onSubmit={handleAddOrUpdateState}>
-              <input
-                type="text"
-                value={inputs.state_name}
-                onChange={(e) =>
-                  setInputs({ ...inputs, state_name: e.target.value })
-                }
-                placeholder="Enter State Name"
-              />
-              <button type="submit">{isEditing ? "Update" : "Add"}</button>
-            </form>
-          </div>
-        </div>
-      )}
+        <StateForm
+          show={showForm}
+          isEditing={isEditing}
+          inputs={inputs}
+          setInputs={setInputs}
+          onSubmit={handleAddOrUpdateState}
+          onClose={() => {
+            setShowForm(false);
+            setIsEditing(false);
+            setInputs({ state_id: null, state_name: "" });
+          }}
+        />
 
-      {/* KANBAN BOARD */}
-      {loading ? (
-        <p style={{ textAlign: "center", color: "white" }}>Loading...</p>
-      ) : (
-        <div className="kanban-container">
-          {Object.keys(columns).map((col) => (
-            <div
-              key={col}
-              className="kanban-column"
-              onDrop={(e) => handleDrop(e, col)}
-              onDragOver={allowDrop}
-            >
-              <table>
-                <thead>
-                  <tr>
-                    <th>{col}</th>
-                    <th>
-                      <button onClick={() => handleEditState(col)} className="small-btn">
-                        <FaPencilAlt />
-                      </button>
-                    </th>
-                    <th>
-                      <button onClick={() => handleDeleteState(col)} className="small-btn">
-                        <MdDelete />
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-              </table>
-
-              <Task
-                col={col}
-                tasks={columns[col]}
-                allStates={allStates}
-                fetchStates={fetchStates}
-                handleDragStart={handleDragStart}
-                setShowTaskForm={(colName) => {
-                  setSelectedStateName(colName);
-                  setShowTaskForm(true);
-                  setTaskInputs({ task_name: "", description: "" });
-                }}
-                setTaskInputs={setTaskInputs}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+        <KanbanBoard
+          loading={loading}
+          columns={columns}
+          allStates={allStates}
+          fetchStates={fetchStates}
+          handleDragStart={handleDragStart}
+          handleDrop={handleDrop}
+          handleEditState={handleEditState}
+          handleDeleteState={handleDeleteState}
+          allowDrop={allowDrop}
+          openTaskForm={(colName) => {
+            setSelectedStateName(colName);
+            setShowTaskForm(true);
+            setTaskInputs({ task_name: "", description: "" });
+          }}
+        />
+      </div>
     </>
   );
 }

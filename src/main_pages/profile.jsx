@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import "../style/Login.css";
+import "../style/profile.css";
 import PrimaryCities from "../assests/cities.json";
 //import Sidebar from "./sidebar.jsx";
 import { userAPI } from "../services/backendservices.js";
 import Modal from "../components/modal.jsx"; // import your existing modal
+import { useNavigate } from "react-router-dom";
 
 function Profile() {
   const [profile, setProfile] = useState(null);
@@ -11,8 +12,13 @@ function Profile() {
   const [formData, setFormData] = useState({});
   const [selectedFile, setSelectedFile] = useState(null);
   const [errors, setErrors] = useState({});
-  const [modal, setModal] = useState({ show: false, title:"",message: "", type: "" });
-
+  const [modal, setModal] = useState({
+    show: false,
+    title: "",
+    message: "",
+    type: "",
+  });
+const navigate=useNavigate();
   const baseURL = "http://192.168.1.17:5000";
   const imageURL = profile?.profile_pic
     ? baseURL + profile.profile_pic.replace(/\\/g, "/").replace(/^\/+/, "/")
@@ -23,9 +29,9 @@ function Profile() {
     acc[item.state].push(item.name);
     return acc;
   }, {});
-const toggleModal=(title,message,type="info")=>{
-    setModal({show:true,title,message,type});
-  }
+  const toggleModal = (title, message, type = "info") => {
+    setModal({ show: true, title, message, type });
+  };
   useEffect(() => {
     const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
@@ -57,7 +63,6 @@ const toggleModal=(title,message,type="info")=>{
     if (name === "dob") {
       const selectedDate = new Date(value);
       const today = new Date();
-      
     }
 
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -108,8 +113,7 @@ const toggleModal=(title,message,type="info")=>{
       setProfile(updatedProfile.data.result);
       setEditMode(false);
 
-              toggleModal("Success","Profile Updated Successfull","success");
-
+      toggleModal("Success", "Profile Updated Successfull", "success");
     } catch (err) {
       console.error("Update failed:", err);
       setModal({
@@ -122,12 +126,11 @@ const toggleModal=(title,message,type="info")=>{
 
   return (
     <>
-    
       <div className="profile-container">
-        <h5 className="profile-heading">Profile Page</h5>
+        <div className="profile-card">
+          <h2 className="profile-title">Profile Info</h2>
 
-        {profile ? (
-          <div className="profile-card">
+          <div className="profile-header">
             <div className="profile-image-container">
               <img src={imageURL} alt="Profile" className="profile-image" />
               {editMode && (
@@ -140,142 +143,184 @@ const toggleModal=(title,message,type="info")=>{
               )}
             </div>
 
-            <div className="profile-details">
-              {editMode ? (
-                <form onSubmit={handleSave} className="edit-form">
-                  <label>
-                    Name:
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name || ""}
-                      onChange={handleChange}
-                    />
-                    {errors.name && <p className="error-text">{errors.name}</p>}
-                  </label>
-
-                  <label>
-                    Email:
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email || ""}
-                      disabled
-                    />
-                  </label>
-
-                  <label>
-                    State:
-                    <select
-                      name="state_name"
-                      value={formData.state_name || ""}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select State</option>
-                      {Object.keys(cities).map((state, id) => (
-                        <option key={id} value={state}>
-                          {state}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.state_name && (
-                      <p className="error-text">{errors.state_name}</p>
-                    )}
-                  </label>
-
-                  <label>
-                    City:
-                    <select
-                      name="city_name"
-                      value={formData.city_name || ""}
-                      onChange={handleChange}
-                    >
-                      <option value="">Select City</option>
-                      {formData.state_name &&
-                        cities[formData.state_name]?.map((city, id) => (
-                          <option key={id} value={city}>
-                            {city}
-                          </option>
-                        ))}
-                    </select>
-                    {errors.city_name && (
-                      <p className="error-text">{errors.city_name}</p>
-                    )}
-                  </label>
-
-                  <label>
-                    Mobile Number:
-                    <input
-                      type="number"
-                      name="mobile_num"
-                      value={formData.mobile_num || ""}
-                      onChange={handleChange}
-                    />
-                    {errors.mobile_num && (
-                      <p className="error-text">{errors.mobile_num}</p>
-                    )}
-                  </label>
-
-                  <label>
-                    DOB:
-                    <input
-                      type="date"
-                      name="dob"
-                      value={
-                        formData.dob
-                          ? new Date(formData.dob).toISOString().split("T")[0]
-                          : ""
-                      }
-                      onChange={handleChange}
-                    />
-                    {errors.dob && <p className="error-text">{errors.dob}</p>}
-                  </label>
-
-                  <div className="edit-buttons">
-                    <button type="submit" className="save-btn">
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={handleCancel}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <p><strong>Name:</strong> {profile.name}</p>
-                  <p><strong>Email:</strong> {profile.email}</p>
-                  <p><strong>State:</strong> {profile.state_name}</p>
-                  <p><strong>City:</strong> {profile.city_name}</p>
-                  <p><strong>DOB:</strong> {new Date(profile.dob).toLocaleDateString()}</p>
-                  <p><strong>Mobile:</strong> {profile.mobile_num}</p>
-
-                  <button onClick={handleEditClick} className="edit-btn">
-                    Edit Profile
-                  </button>
-                </>
-              )}
+            <div className="profile-main-info">
+              <h3>{profile?.name}</h3>
+              <button className="change-password-btn" onClick={()=>navigate("/forgotpassword")}>Change Password</button>
             </div>
           </div>
-        ) : (
-          <p className="loading-text">Loading profile...</p>
-        )}
+
+          {profile ? (
+            <form onSubmit={handleSave} className="profile-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Name:</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name || ""}
+                    onChange={handleChange}
+                    disabled={!editMode}
+                  />
+                  {errors.name && <p className="error-text">{errors.name}</p>}
+                </div>
+
+                <div className="form-group">
+                  <label>Email:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email || ""}
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  {editMode ? (
+                    <>
+                      {" "}
+                      <label>State:</label>
+                      <select
+                        name="state_name"
+                        value={formData.state_name || ""}
+                        onChange={handleChange}
+                        disabled={!editMode}
+                      >
+                        <option value="">Select State</option>
+                        {Object.keys(cities).map((state, id) => (
+                          <option key={id} value={state}>
+                            {state}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.state_name && (
+                        <p className="error-text">{errors.state_name}</p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <div className="form-group">
+                        <label>State:</label>
+                        <input
+                          name="state_name"
+                          value={formData.state_name || ""}
+                          disabled
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+                {editMode ? (
+                  <>
+                    {" "}
+                    <div className="form-group">
+                      <label>City:</label>
+                      <select
+                        name="city_name"
+                        value={formData.city_name || ""}
+                        onChange={handleChange}
+                        disabled={!editMode}
+                      >
+                        <option value="">Select City</option>
+                        {formData.state_name &&
+                          cities[formData.state_name]?.map((city, id) => (
+                            <option key={id} value={city}>
+                              {city}
+                            </option>
+                          ))}
+                      </select>
+                      {errors.city_name && (
+                        <p className="error-text">{errors.city_name}</p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="form-group">
+                      <label>City:</label>
+                      <input
+                        name="city_name"
+                        value={formData.city_name || ""}
+                        disabled
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Mobile Number:</label>
+                  <input
+                    type="number"
+                    name="mobile_num"
+                    value={formData.mobile_num || ""}
+                    onChange={handleChange}
+                    disabled={!editMode}
+                  />
+                  {errors.mobile_num && (
+                    <p className="error-text">{errors.mobile_num}</p>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label>Date of Birth:</label>
+                  <input
+                    type="date"
+                    name="dob"
+                    value={
+                      formData.dob
+                        ? new Date(formData.dob).toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={handleChange}
+                    disabled={!editMode}
+                  />
+                  {errors.dob && <p className="error-text">{errors.dob}</p>}
+                </div>
+              </div>
+
+              {editMode ? (
+                <div className="edit-buttons">
+                  <button type="submit" className="save-btn">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-btn"
+                    onClick={handleCancel}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="edit-btn"
+                  onClick={handleEditClick}
+                >
+                  Edit Profile
+                </button>
+              )}
+            </form>
+          ) : (
+            <p className="loading-text">Loading profile...</p>
+          )}
+        </div>
       </div>
 
-      {/* Modal section */}
+      {/* Modal Section */}
       {modal.show && (
- <Modal
-  show={modal.show}
-  title={modal.title}
-  message={modal.message}
-  type={modal.type}
-  onClose={() => setModal({ ...modal, show: false })}
-  onConfirm={modal.onConfirm}
-/>
-
+        <Modal
+          show={modal.show}
+          title={modal.title}
+          message={modal.message}
+          type={modal.type}
+          onClose={() => setModal({ ...modal, show: false })}
+          onConfirm={modal.onConfirm}
+        />
       )}
     </>
   );

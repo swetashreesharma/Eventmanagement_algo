@@ -1,13 +1,14 @@
 // modal.jsx
 import React from "react";
 import "../style/modal.css";
+import { createPortal } from "react-dom";
 
 function Modal({ show, onClose, title, message, type, onConfirm }) {
   if (!show) return null;
 
   const isConfirm = typeof onConfirm === "function";
 
-  return (
+  const modalContent= (
     <div className="modal-overlay">
       <div className={`modal-card ${type}`}>
         <h3>{title}</h3>
@@ -32,6 +33,7 @@ function Modal({ show, onClose, title, message, type, onConfirm }) {
       </div>
     </div>
   );
+  return createPortal(modalContent,document.body)
 }
 
 export default Modal;

@@ -43,7 +43,7 @@ function Login() {
           setTimeout(() => {
             localStorage.setItem("token", res.data.user.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
-            navigate("/mainpage");
+            navigate("/dashboard");
           }, 1500);
         } else {
           toggleModal("Error", res.data.error || "Login failed", "error");

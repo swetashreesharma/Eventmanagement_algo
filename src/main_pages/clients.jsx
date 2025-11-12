@@ -5,13 +5,14 @@ import "../style/Login.css";
 import { useState, useEffect } from "react";
 import PrimaryCities from "../assests/cities.json";
 
-import { clientAPI,projectAPI } from "../services/backendservices.js";
+import { clientAPI, projectAPI } from "../services/backendservices.js";
 import Sidebar from "./sidebar.jsx";
 import Modal from "../components/modal.jsx";
 import Table from "../components/Table/table.jsx";
 import SearchSortBar from "../components/SearchSortBar.jsx";
 import useSearchSort from "../hooks/useSearchSort.jsx";
 import PopupForm from "../components/Form/PopUpForm.jsx";
+import ProjectsDropdown from "../components/Project/ProjectDropdown.jsx";
 function Client() {
   const [showForm, setShowForm] = useState(false);
   const [inputs, setInputs] = useState({});
@@ -21,7 +22,7 @@ function Client() {
   const [formMode, setFormMode] = useState("add");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
-  const[projects,setprojects]=useState([]);
+  const [projects, setprojects] = useState([]);
   const [sortDirection, setSortDirection] = useState("asc");
   const [modal, setModal] = useState({
     show: false,
@@ -180,34 +181,31 @@ function Client() {
     ["f_name", "l_name", "email", "city_name"] // searchable fields
   );
 
-  async function fetchProjects(){
-    try{
-        const res= await projectAPI.getAllProjects();
-        if(res?.data?.status){
-          setprojects(res.data.data || []);
-        }
-        else{
-          setprojects([]);
-        }
-
-
-    }
-    catch(err){
-        console.warn("Error fetching projects:",err?.response?.data ||err.message);
+  async function fetchProjects() {
+    try {
+      const res = await projectAPI.getAllProjects();
+      if (res?.data?.status) {
+        setprojects(res.data.data || []);
+      } else {
+        setprojects([]);
+      }
+    } catch (err) {
+      console.warn(
+        "Error fetching projects:",
+        err?.response?.data || err.message
+      );
     }
   }
 
   const projectMap = projects.reduce((acc, p) => {
-  if (!acc[p.client_id]) acc[p.client_id] = [];
-  acc[p.client_id].push(p.p_name); // or p.full_name, whichever you want
-  return acc;
-}, {});
-const clientsWithProjects = sortedClients.map((c) => ({
-  ...c,
-  Project: projectMap[c.client_id]?.join(", ") || "—", // show names or "—"
-}));
-
-
+    if (!acc[p.client_id]) acc[p.client_id] = [];
+    acc[p.client_id].push(p.p_name);
+    return acc;
+  }, {});
+  const clientsWithProjects = sortedClients.map((c) => ({
+    ...c,
+    Project:<ProjectsDropdown projects={projects.filter((p)=>  p.client_id === c.client_id)}/>,
+  }));
 
   return (
     <>
@@ -328,9 +326,8 @@ const clientsWithProjects = sortedClients.map((c) => ({
           { header: "City", field: "city_name" },
           { header: "Phone", field: "phone" },
           { header: "Note", field: "note", isNote: true },
-          {header: "projects", field:"Project"}
+          { header: "projects", field: "Project" },
         ]}
-
         data={clientsWithProjects}
         loading={loading}
         onUpdate={handleUpdate}

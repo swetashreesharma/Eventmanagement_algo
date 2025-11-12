@@ -9,6 +9,7 @@ import { MdDelete } from "react-icons/md";
 import { FaPencilAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import Sidebar from "../sidebar";
 
 import { taskAPI } from "../../services/backendservices";
 
@@ -352,7 +353,7 @@ function State() {
 
   return (
     <>
-      <MainPage />
+      <Sidebar />
       <br />
       <label className="heading">State List</label>
       <br />

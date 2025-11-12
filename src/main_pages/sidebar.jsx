@@ -1,12 +1,18 @@
 import "../style/Login.css";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { FaBars, FaTimes, FaHome, FaUsers, FaProjectDiagram, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
+import { LuLayoutDashboard, LuCircleUser, LuUsers } from "react-icons/lu";
+import { LiaProjectDiagramSolid } from "react-icons/lia";
+import Logout from "../components/logout";
+
+import { PiSignOutBold } from "react-icons/pi";
 
 function Sidebar({ onToggle }) {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
+  const logoutRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -42,7 +48,6 @@ function Sidebar({ onToggle }) {
 
   return (
     <>
-      {/* Hamburger stays always visible */}
       <button className="hamburger-btn" onClick={toggleSidebar}>
         {isSidebarOpen ? <FaTimes /> : <FaBars />}
       </button>
@@ -58,7 +63,7 @@ function Sidebar({ onToggle }) {
             onClick={() => handleNavigation("/dashboard")}
             title="Dashboard"
           >
-            <FaHome className="menu-icon" />
+            <LuLayoutDashboard className="menu-icon" />
             {isSidebarOpen && <span>Dashboard</span>}
           </div>
 
@@ -67,7 +72,7 @@ function Sidebar({ onToggle }) {
             onClick={() => handleNavigation("/client")}
             title="Client"
           >
-            <FaUsers className="menu-icon" />
+            <LuUsers className="menu-icon" />
             {isSidebarOpen && <span>Client</span>}
           </div>
 
@@ -76,7 +81,7 @@ function Sidebar({ onToggle }) {
             onClick={() => handleNavigation("/projects")}
             title="Projects"
           >
-            <FaProjectDiagram className="menu-icon" />
+            <LiaProjectDiagramSolid className="menu-icon" />
             {isSidebarOpen && <span>Projects</span>}
           </div>
 
@@ -85,10 +90,21 @@ function Sidebar({ onToggle }) {
             onClick={() => handleNavigation("/profile")}
             title="Profile"
           >
-            <FaUserCircle className="menu-icon" />
+            <LuCircleUser className="menu-icon" />
             {isSidebarOpen && <span>Profile</span>}
           </div>
         </div>
+
+        <div
+          className="logout-section"
+          onClick={() => logoutRef.current.triggerLogout()}
+          title="Logout"
+        >
+          <PiSignOutBold className="menu-icon" />
+          {isSidebarOpen && <span>Logout</span>}
+        </div>
+
+        <Logout ref={logoutRef} />
       </div>
     </>
   );
