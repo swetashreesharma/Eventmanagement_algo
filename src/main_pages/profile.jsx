@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import "../style/profile.css";
 import PrimaryCities from "../assests/cities.json";
-//import Sidebar from "./sidebar.jsx";
 import { userAPI } from "../services/backendservices.js";
 import Modal from "../components/modal.jsx"; // import your existing modal
 import { useNavigate } from "react-router-dom";

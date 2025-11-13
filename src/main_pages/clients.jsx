@@ -1,18 +1,16 @@
-//uppdate doesnt update email
-//import "../Login.css";
 import "../style/Login.css";
 
 import { useState, useEffect } from "react";
 import PrimaryCities from "../assests/cities.json";
 
 import { clientAPI, projectAPI } from "../services/backendservices.js";
-import Sidebar from "./sidebar.jsx";
 import Modal from "../components/modal.jsx";
 import Table from "../components/Table/table.jsx";
 import SearchSortBar from "../components/SearchSortBar.jsx";
 import useSearchSort from "../hooks/useSearchSort.jsx";
 import PopupForm from "../components/Form/PopUpForm.jsx";
 import ProjectsDropdown from "../components/Project/ProjectDropdown.jsx";
+import { useNavigate } from "react-router-dom";
 function Client() {
   const [showForm, setShowForm] = useState(false);
   const [inputs, setInputs] = useState({});
@@ -44,6 +42,7 @@ function Client() {
       setModal((prev) => ({ ...prev, show: false }));
     }, 2000);
   };
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchClients().catch((err) => {
@@ -204,7 +203,11 @@ function Client() {
   }, {});
   const clientsWithProjects = sortedClients.map((c) => ({
     ...c,
-    Project:<ProjectsDropdown projects={projects.filter((p)=>  p.client_id === c.client_id)}/>,
+    Project: (
+      <ProjectsDropdown
+        projects={projects.filter((p) => p.client_id === c.client_id)}
+      />
+    ),
   }));
 
   return (
@@ -332,8 +335,22 @@ function Client() {
         loading={loading}
         onUpdate={handleUpdate}
         onDeleteClient={handleDelete}
+        extraAction={(client) => (
+          <button
+            className="view-btn"
+            onClick={() =>
+              navigate("/projects", {
+                state: {
+                  client_id: client.client_id,
+                  client_name: `${client.f_name} ${client.l_name}`,
+                },
+              })
+            }
+          >
+            View
+          </button>
+        )}
       />
-
       <Modal
         show={modal.show}
         onClose={() => setModal({ ...modal, show: false })}

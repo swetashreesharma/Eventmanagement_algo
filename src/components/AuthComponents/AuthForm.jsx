@@ -3,12 +3,12 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Modal from "../modal.jsx";
 import "../../style/auth/authForm.css";
 
-function AuthForm({ title, fields, onSubmit, linkList = [], extraProps = {} }) {
+function AuthForm({ title, fields, onSubmit, linkList = [], extraProps = {} ,extraContent}) {
   const [inputs, setInputs] = useState({});
   const [errors, setErrors] = useState({});
   const [showPasswordFields, setShowPasswordFields] = useState({});
   const [modal, setModal] = useState({
-    show: false,
+    show: false,  
     title: "",
     message: "",
     type: "",
@@ -121,7 +121,10 @@ function AuthForm({ title, fields, onSubmit, linkList = [], extraProps = {} }) {
                 </div>
               );
             })}
-            <br />
+             {extraContent && <div >{extraContent}</div>}
+
+            
+            
             {linkList.map((link, idx) => (
               <div key={idx} id="link">
                 <a href={link.to}>{link.label}</a>

@@ -27,22 +27,19 @@ function Table({ columns, data, loading, onUpdate, onDeleteClient,onDeleteProjec
               data.map((row, i) => (
                 <tr key={i}>
                   {columns.map((col, j) => (
-                    <td key={j}>
-                      {col.isNote
-                        ? row[col.field]?.length > 30
-                          ? row[col.field].substring(0, 30) + "..."
-                          : row[col.field]
-                        : col.isDate
-                        ? row[col.field]
-                          ? row[col.field].split("T")[0]
-                          : ""
-                        : row[col.field]}
-                    </td>
+               <td key={j} className="fixed-column" title={row[col.field]}>
+  {col.isDate
+    ? row[col.field]
+      ? row[col.field].split("T")[0]
+      : ""
+    : row[col.field]}
+</td>
+
                   ))}
 
                   <td>
                     <div style={{ display: "flex", gap: "10px" }}>
-                      {onUpdate && <button onClick={() => onUpdate(row)}>Update</button>}
+                      {onUpdate && <button onClick={() => onUpdate(row)}>Edit</button>}
                       {onDeleteClient && (
                         <button onClick={() => onDeleteClient(row.client_id)}>
                           Delete

@@ -5,7 +5,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { LuLayoutDashboard, LuCircleUser, LuUsers } from "react-icons/lu";
 import { LiaProjectDiagramSolid } from "react-icons/lia";
 import Logout from "../components/logout";
-
+import logo from "../../src/assests/logo2.png"
 import { PiSignOutBold } from "react-icons/pi";
 
 function Sidebar({ onToggle }) {
@@ -48,9 +48,13 @@ function Sidebar({ onToggle }) {
 
   return (
     <>
-      <button className="hamburger-btn" onClick={toggleSidebar}>
-        {isSidebarOpen ? <FaTimes /> : <FaBars />}
-      </button>
+        {isSidebarOpen ?<><button className="hamburger-btn" onClick={toggleSidebar}><FaTimes /> </button> <img
+        src={logo}
+        alt="NexEvent Logo"
+        className="sidebar-logo"
+      /> </>:<><button className="hamburger-btn" onClick={toggleSidebar}> <FaBars /> </button> </>}
+        
+ 
 
       {/* Sidebar */}
       <div
@@ -58,7 +62,9 @@ function Sidebar({ onToggle }) {
         className={`sidebar ${isSidebarOpen ? "open" : "collapsed"}`}
       >
         <div className="datadiv">
-          <div
+       
+          
+           <div
             className="data"
             onClick={() => handleNavigation("/dashboard")}
             title="Dashboard"

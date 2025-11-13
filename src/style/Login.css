@@ -1,4 +1,4 @@
-#root{
+#root {
   padding-left: 3rem;
 }
 .card {
@@ -17,7 +17,6 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  margin: 0;
 }
 body {
   background: url("../assests/BG6.png");
@@ -174,11 +173,10 @@ p {
   font-size: 15px;
 }
 
-.edit-btn:hover{
+.edit-btn:hover {
   background-color: white;
   color: #1e2e2e;
 }
-
 
 .save-btn:hover,
 .cancel-btn:hover {
@@ -207,9 +205,6 @@ p {
   color: white;
   backdrop-filter: blur(10px);
 }
-
-
-
 
 .logout-section:hover {
   color: #1e2e2e;
@@ -271,6 +266,15 @@ p {
   border-radius: 6px;
   cursor: pointer;
   z-index: 1001;
+}
+.sidebar-logo {
+  position: fixed;
+  z-index: 1001;
+  top: 30px;
+  left: 80px;
+   width:150px; 
+   height: 35px; 
+   border-radius:8px ;
 }
 
 .main-content {
@@ -764,3 +768,20 @@ select.client-project-form {
 .project-dropdown:hover {
   border-color: white;
 }
+/*===========================remember me ==============================================*/
+.remember-me {
+ 
+  margin-top: 10px;
+}
+
+.remember-label {
+  font-size: 14px;
+  color: #1e2e2e;
+  cursor: pointer;
+}
+
+.remember-label input {
+  accent-color: #1e2e2e;
+  margin-right: 0px;
+}
+

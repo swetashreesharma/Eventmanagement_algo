@@ -4,12 +4,15 @@ git push
 
 
 
+remember me
+note hover text
+localhost to name of project
+logo or name visible in project
 
 
 
 
-
-
+kubernetes.docker.internal
 
 
 

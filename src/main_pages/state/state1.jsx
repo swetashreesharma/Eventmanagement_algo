@@ -20,7 +20,7 @@ function State() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [allStates, setAllStates] = useState([]);
-
+const projectNameFromProjectPage=location.state?.p_name || "";
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [taskInputs, setTaskInputs] = useState({
     task_name: "",
@@ -290,7 +290,7 @@ function State() {
 />
 
         <br />
-        <label className="heading">State List</label>
+        <label className="heading">{`State List of Project:  ${projectNameFromProjectPage}`}</label>
         <br />
         <button className="clientbutton" onClick={() => setShowForm(true)}>
           + Add State

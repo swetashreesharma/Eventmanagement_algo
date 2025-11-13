@@ -1,15 +1,14 @@
 #root {
   max-width: 500px;
-  margin: 50px 0 50px 450px; 
+  margin: 50px 0 50px 450px;
   padding: 2rem;
 }
 
-.password{
-display: grid;
-margin: 5px ;
-grid-template-columns: 85% 15%;
+.password {
+  display: grid;
+  margin: 5px;
+  grid-template-columns: 85% 15%;
 }
-
 
 .card {
   padding: 2em;
@@ -17,121 +16,107 @@ grid-template-columns: 85% 15%;
   padding: 20px;
   border-radius: 15px;
   background-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 8px 0 rgba(106, 101, 101, 0.19), 0 6px 20px 0 rgba(106, 101, 101, 0.19);
-  
-
+  box-shadow: 0 4px 8px 0 rgba(106, 101, 101, 0.19),
+    0 6px 20px 0 rgba(106, 101, 101, 0.19);
 }
 
-body{
-    background: url('././assests/background.jpg') ;
+body {
+  background: url("././assests/background.jpg");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
 }
 
-
 button:hover {
-  background-color:#1e2e2e;
-  color:aliceblue;
-  
+  background-color: #1e2e2e;
+  color: aliceblue;
 }
 
-
-
-
-input,button,select {
-height: 35px;    
-padding: 4px 12px; 
-border-radius: 8px;
-border: 1px solid #ccc;
-font-size: 16px;
-
+input,
+button,
+select {
+  height: 35px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
 }
 
-
-
-#head{
+#head {
   background-color: #1e2e2e;
   color: white;
-  margin: 10px ;
-  height: 35px;    
-  padding: 4px 12px; 
+  margin: 10px;
+  height: 35px;
+  padding: 4px 12px;
   text-align: center;
   border-radius: 8px;
 }
 
-a{
+a {
   text-align: center;
 }
-p{
+p {
   color: red;
 }
 /*----------------------mainpage----------------------------------*/
 .sidebar {
   position: fixed;
   top: 0;
-  left: 0; 
+  left: 0;
   width: 250px;
   height: 100vh;
   padding: 20px;
-  border-radius: 0 15px 15px 0; 
+  border-radius: 0 15px 15px 0;
   background-color: rgba(234, 236, 240, 0.3);
   box-shadow: 0 4px 8px 0 rgba(106, 101, 101, 0.19),
-              0 6px 20px 0 rgba(106, 101, 101, 0.19);
+    0 6px 20px 0 rgba(106, 101, 101, 0.19);
   color: white;
   backdrop-filter: blur(10px);
 }
 
-
-
-.data{
-  background-color:#1e2e2e;
-  color:aliceblue;
-  height: 35px;    
-padding: 4px 12px; 
-border-radius: 8px;
-border: 1px solid #ccc;
-font-size: 16px;
+.data {
+  background-color: #1e2e2e;
+  color: aliceblue;
+  height: 35px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
   width: 200px;
-  margin:0%;
-
-  
+  margin: 0%;
 }
-.data:hover{
-  color:#1e2e2e;
-  background-color:aliceblue;
+.data:hover {
+  color: #1e2e2e;
+  background-color: aliceblue;
 }
-.clientbutton{
+.clientbutton {
   margin-top: 30px;
-    background-color:#1e2e2e;
-  color:aliceblue;
-  height: 35px;    
-  padding: 4px 12px; 
+  background-color: #1e2e2e;
+  color: aliceblue;
+  height: 35px;
+  padding: 4px 12px;
 
   font-size: 15px;
   width: 200px;
-  margin-left:5%;
-   left: 0; 
+  margin-left: 5%;
+  left: 0;
   position: fixed;
-
 }
-.clientheading{
+.clientheading {
+  color: aliceblue;
 
-  color:aliceblue;
-
-   font-size: 25px;
-   margin-left:5%;
-   left: 0; 
+  font-size: 25px;
+  margin-left: 5%;
+  left: 0;
   position: fixed;
   font-weight: bolder;
-
-
 }
 /*-------------------------------client----------------------------------*/
-.clientbutton:hover{
-  color:#1e2e2e;
-  background-color:aliceblue;
-}.popup-overlay {
+.clientbutton:hover {
+  color: #1e2e2e;
+  background-color: aliceblue;
+}
+.popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -142,8 +127,7 @@ font-size: 16px;
   align-items: center;
   justify-content: center;
   z-index: 999;
- overflow: auto; 
-
+  overflow: auto;
 }
 
 .popup-card {
@@ -156,8 +140,8 @@ font-size: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   position: relative;
   font-family: "Poppins", sans-serif;
-   max-height: 90vh;
-  overflow-y: auto; 
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 /* ---------- Header ---------- */
@@ -232,21 +216,19 @@ textarea {
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 8px;
   overflow: hidden;
-  height: 35px;    
-padding: 4px 12px; 
-border-radius: 8px;
-font-size: 16px;
-  margin-left:5%;
-   left: 0; 
+  height: 35px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-left: 5%;
+  left: 0;
   position: fixed;
-
 }
 
 .client-table th {
   background-color: #1e2e2e;
   color: white;
   text-align: left;
-
 }
 
 .client-table td,
@@ -324,7 +306,7 @@ font-size: 16px;
   backdrop-filter: blur(12px);
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(106, 101, 101, 0.19),
-              0 6px 20px rgba(106, 101, 101, 0.19);
+    0 6px 20px rgba(106, 101, 101, 0.19);
   color: #1e2e2e;
   font-family: "Poppins", sans-serif;
 }
@@ -385,8 +367,6 @@ font-size: 16px;
   flex-grow: 1;
   font-size: 16px;
 }
-
-
 
 .loading-text {
   text-align: center;
@@ -455,17 +435,14 @@ font-size: 16px;
 .search-sort-bar {
   margin-bottom: 10px;
 }
-.search-sort-heading{
+.search-sort-heading {
+  color: aliceblue;
+  height: 35px;
 
-  color:aliceblue;
-  height: 35px;    
-
-   font-size: 25px;
-   margin-left:5%;
+  font-size: 25px;
+  margin-left: 5%;
   position: fixed;
   font-weight: bolder;
-
-
 }
 .search-input {
   padding: 6px;
@@ -479,7 +456,8 @@ font-size: 16px;
   margin-top: 27px;
 }
 
-.search-input, .sort-dropdown {
+.search-input,
+.sort-dropdown {
   padding: 6px;
   border-radius: 6px;
   border: 1px solid #ccc;
